@@ -1,29 +1,29 @@
+# fastapi/app/services/s3_service.py
 import boto3
-import io
-from dotenv import load_dotenv
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-load_dotenv()
+# Carrega as variáveis de ambiente do .env
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
+# Cria o cliente S3 (compatível com MinIO ou AWS)
 s3 = boto3.client(
-    's3',
-    aws_access_key_id=os.getent('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-    endpoint_url=os.getenv('S3_ENDPOINT_URL')
+    "s3",
+    endpoint_url=os.getenv("S3_ENDPOINT_URL"),
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
 )
 
-def upload_to_s3(df):
-    bucket_name = os.getenv('S3_BUCKET_NAME')
-    csv_buffer = io.StringIO()
-    df.to_csv(csv_buffer, index=False)
+def upload_to_minio(file_path: Path):
+    """
+    Envia o arquivo local para o bucket configurado no .env.
+    """
+    bucket = os.getenv("S3_BUCKET_NAME", "inmet-data")
+    key = f"raw/{file_path.name}"
 
-    file_name = f"inmet_{os.getenv('AWS_DEFAULT_REGION')}.csv"
-
-    s3.put_object(
-        Bucket = bucket_name,
-        Key = f"raw/{file_name}",
-        Body = csv_buffer.getvalue(),
-        ContentType = "text/csv"
-    )
-
-    return f"s3://{bucket_name}/raw/{file_name}"
+    try:
+        s3.upload_file(str(file_path), bucket, key)
+        print(f"✅ Enviado: {file_path.name} → s3://{bucket}/{key}")
+    except Exception as e:
+        raise RuntimeError(f"Erro ao enviar {file_path.name}: {e}")
