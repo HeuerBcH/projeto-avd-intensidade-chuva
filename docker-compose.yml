@@ -1,0 +1,81 @@
+version: '3.9'
+
+services:
+
+  # FASTAPI - Coleta e ingestão de dados do INMET
+  fastapi:
+    build: ./fastapi
+    container_name: fastapi-ingestao
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./fastapi/app/services/.env
+    depends_on:
+      - minio
+    volumes:
+      - ./fastapi/app:/app
+    networks:
+      - avd-network
+
+  # MINIO - Armazenamento S3 local
+  minio:
+    image: minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - avd-network
+
+  # JUPYTERLAB - Análise e modelagem (notebooks)
+  jupyterlab:
+    image: jupyter/base-notebook:python-3.10
+    container_name: jupyterlab
+    ports:
+      - "1010:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    environment:
+      JUPYTER_TOKEN: avd2025
+    networks:
+      - avd-network
+    depends_on:
+      - minio
+
+  # MLFLOW - Registro e versionamento de modelos
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.14.1
+    container_name: mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_TRACKING_URI: http://0.0.0.0:5000
+    volumes:
+      - ./mlflow:/mlflow
+    command: mlflow server --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root ./mlflow/artifacts --host 0.0.0.0
+    networks:
+      - avd-network
+
+  # TRENDZ ANALYTICS - Dashboard de visualização
+  trendz:
+    image: thingsboard/trendz:1.11.0
+    container_name: trendz
+    ports:
+      - "8888:8888"
+    environment:
+      - TRENDZ_URL=http://localhost:8888
+    depends_on:
+      - jupyterlab
+      - mlflow
+    networks:
+      - avd-network
+
+networks:
+  avd-network:
+    driver: bridge
