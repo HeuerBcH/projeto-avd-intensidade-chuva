@@ -1,21 +1,43 @@
-version: '3.9'
-
 services:
 
   # FASTAPI - Coleta e ingestão de dados do INMET
   fastapi:
-    build: ./fastapi
+    build: ./fastapi/app
     container_name: fastapi-ingestao
     ports:
       - "8000:8000"
     env_file:
       - ./fastapi/app/services/.env
     depends_on:
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
     volumes:
       - ./fastapi/app:/app
     networks:
       - avd-network
+
+  # POSTGRESQL - Banco de dados estruturado
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-inmet
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: inmet_db
+      POSTGRES_USER: inmet_user
+      POSTGRES_PASSWORD: inmet_password
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./sql_scripts:/docker-entrypoint-initdb.d
+    networks:
+      - avd-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inmet_user -d inmet_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # MINIO - Armazenamento S3 local
   minio:
@@ -71,6 +93,7 @@ services:
     environment:
       - TRENDZ_URL=http://localhost:8888
     depends_on:
+      - postgres
       - jupyterlab
       - mlflow
     networks:

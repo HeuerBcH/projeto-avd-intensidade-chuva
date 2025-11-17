@@ -1,2 +1,78 @@
-.venv/
-fastapi/app/services/.env
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data directories (não versionar dados)
+data/
+data/minio/
+data/postgres/
+data/raw/
+data/processed/
+
+# MLFlow
+mlflow/artifacts/
+mlflow/mlflow.db
+mlflow/*.db
+
+# Logs
+*.log
+logs/
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# CSV files (dados brutos não devem ser versionados)
+*.CSV
+*.csv
+!fastapi/app/data/raw/.gitkeep
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# MinIO data
+data/minio/
+
+# PostgreSQL data
+data/postgres/
+
+# OneDrive sync files
+~$*

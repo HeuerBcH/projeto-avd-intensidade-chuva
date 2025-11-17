@@ -4,3 +4,5 @@ requests
 boto3
 pandas
 python-dotenv
+psycopg2-binary
+sqlalchemy
