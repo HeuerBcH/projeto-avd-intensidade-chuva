@@ -84,20 +84,72 @@ services:
     networks:
       - avd-network
 
+  # THINGSBOARD - Necessário para o Trendz funcionar
+  thingsboard:
+    image: thingsboard/tb:latest
+    container_name: thingsboard
+    ports:
+      - "9090:9090"
+      - "1883:1883"
+      - "5683:5683/udp"
+    environment:
+      # Configuração do PostgreSQL
+      - TB_DATABASE_ENTITIES_TYPE=sql
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/thingsboard
+      - SPRING_DATASOURCE_USERNAME=inmet_user
+      - SPRING_DATASOURCE_PASSWORD=inmet_password
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      # Configurações JVM
+      - JAVA_OPTS=-Xms256m -Xmx1024m
+      # Configurações adicionais
+      - TB_QUEUE_TYPE=in-memory
+      # Força uso do PostgreSQL (não HSQL)
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      # Permite criação automática do schema (apenas na primeira inicialização)
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    volumes:
+      - ./thingsboard/data:/data
+      - ./thingsboard/logs:/var/log/thingsboard
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - avd-network
+    restart: unless-stopped
+
   # TRENDZ ANALYTICS - Dashboard de visualização
   trendz:
-    image: thingsboard/trendz:1.11.0
+    image: thingsboard/trendz:latest
     container_name: trendz
     ports:
       - "8888:8888"
     environment:
+      # URL pública do Trendz
       - TRENDZ_URL=http://localhost:8888
+      # Configuração do PostgreSQL (dentro do Docker, use o nome do serviço)
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/inmet_db
+      - SPRING_DATASOURCE_USERNAME=inmet_user
+      - SPRING_DATASOURCE_PASSWORD=inmet_password
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      # Configurações JVM
+      - JAVA_OPTS=-Xms256m -Xmx1024m
+      # Configurações do ThingsBoard (necessário para autenticação)
+      # IMPORTANTE: Use o nome do serviço Docker, não localhost
+      - TB_SERVER_URL=http://thingsboard:9090
+      - TB_SERVER_WS_URL=ws://thingsboard:9090
+      # Força o uso da configuração acima
+      - TB_API_URL=http://thingsboard:9090
+    volumes:
+      - ./trendz/data:/data
+      - ./trendz/logs:/var/log/trendz
     depends_on:
-      - postgres
-      - jupyterlab
-      - mlflow
+      postgres:
+        condition: service_healthy
+      thingsboard:
+        condition: service_started
     networks:
       - avd-network
+    restart: unless-stopped
 
 networks:
   avd-network:
