@@ -16,6 +16,7 @@ build/
 .env
 .env.local
 *.env
+!.env.example
 
 # IDE
 .vscode/
@@ -29,13 +30,16 @@ build/
 *.ipynb_checkpoints/
 
 # Data directories (não versionar dados)
-data/
+data/*
+!data/.gitkeep
 data/minio/
 data/postgres/
 data/raw/
 data/processed/
 
 # MLFlow
+mlflow/*
+!mlflow/.gitkeep
 mlflow/artifacts/
 mlflow/mlflow.db
 mlflow/*.db
@@ -68,11 +72,23 @@ desktop.ini
 *.sqlite
 *.sqlite3
 
+# ThingsBoard
+thingsboard/*
+!thingsboard/.gitkeep
+thingsboard/data/
+thingsboard/logs/
+
+# Trendz
+trendz/*
+!trendz/.gitkeep
+trendz/data/
+trendz/logs/
+
 # MinIO data
 data/minio/
 
-# PostgreSQL data
-data/postgres/
+# Keep only .gitkeep files in empty directories
+!**/.gitkeep
 
 # OneDrive sync files
 ~$*

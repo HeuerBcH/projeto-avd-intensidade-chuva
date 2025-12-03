@@ -4,11 +4,15 @@ FROM python:3.10-slim
 # Define diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos necessários
-COPY . /app
+# Copia apenas requirements.txt primeiro (para cache de layers)
+COPY requirements.txt .
 
 # Instala dependências
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copia o resto dos arquivos
+COPY . /app
 
 # Expõe a porta usada pela API
 EXPOSE 8000

@@ -1,11 +1,4 @@
-#!/bin/bash
-
-# Script Bash para iniciar o pipeline completo
-# Autor: Projeto AVD - Intensidade de Chuva
-
-echo "========================================"
 echo "  Pipeline INMET - Iniciando Servicos"
-echo "========================================"
 echo ""
 
 # Verifica se o Docker está rodando
@@ -18,7 +11,7 @@ echo "Docker está rodando!"
 echo ""
 
 # Verifica se o arquivo .env existe
-ENV_FILE="fastapi/app/services/.env"
+ENV_FILE="fastapi/app/.env"
 if [ ! -f "$ENV_FILE" ]; then
     echo "Criando arquivo .env..."
     cat > "$ENV_FILE" << EOF
@@ -34,6 +27,11 @@ POSTGRES_PORT=5432
 POSTGRES_DB=inmet_db
 POSTGRES_USER=inmet_user
 POSTGRES_PASSWORD=inmet_password
+
+# Configurações do ThingsBoard
+THINGSBOARD_HOST=http://thingsboard:9090
+THINGSBOARD_USER=tenant@thingsboard.org
+THINGSBOARD_PASSWORD=tenant
 EOF
     echo "Arquivo .env criado!"
 fi
@@ -47,13 +45,12 @@ echo "Aguardando serviços iniciarem..."
 sleep 10
 
 echo ""
-echo "========================================"
 echo "  Servicos Iniciados!"
-echo "========================================"
 echo ""
 echo "Acesse os seguintes serviços:"
 echo "  - FastAPI:        http://localhost:8000"
-echo "  - JupyterLab:    http://localhost:1010 (token: avd2025)"
+echo "  - ThingsBoard:    http://localhost:9090 (tenant@thingsboard.org/tenant)"
+echo "  - JupyterLab:     http://localhost:1010 (token: avd2025)"
 echo "  - MLFlow:         http://localhost:5000"
 echo "  - Trendz:         http://localhost:8888"
 echo "  - MinIO Console:  http://localhost:9001 (minioadmin/minioadmin)"
