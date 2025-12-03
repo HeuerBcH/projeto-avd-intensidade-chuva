@@ -6,3 +6,6 @@ pandas
 python-dotenv
 psycopg2-binary
 sqlalchemy
+mlflow
+scikit-learn
+numpy

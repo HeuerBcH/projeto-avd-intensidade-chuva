@@ -97,8 +97,11 @@ def insert_dados_meteorologicos_batch(dados: List[Dict]):
         # Prepara os dados para inserção em lote
         values = []
         for d in dados:
-            # Combina data e hora para criar timestamp
-            timestamp_utc = datetime.combine(d['data'], d['hora_utc'])
+            # Usa timestamp_utc se existir, senão combina data e hora
+            if 'timestamp_utc' in d and d['timestamp_utc']:
+                timestamp_utc = d['timestamp_utc'] if isinstance(d['timestamp_utc'], datetime) else datetime.combine(d['data'], d['hora_utc'])
+            else:
+                timestamp_utc = datetime.combine(d['data'], d['hora_utc'])
             
             values.append((
                 d['codigo_wmo'],

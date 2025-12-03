@@ -4,7 +4,7 @@
 -- Tabela de estações meteorológicas
 CREATE TABLE IF NOT EXISTS estacoes (
     codigo_wmo VARCHAR(10) PRIMARY KEY,
-    regiao VARCHAR(2) NOT NULL,
+    regiao VARCHAR(50) NOT NULL,  -- Aumentado de 2 para 50 (ex: "NORDESTE")
     uf VARCHAR(2) NOT NULL,
     nome VARCHAR(100) NOT NULL,
     latitude DECIMAL(10, 8),

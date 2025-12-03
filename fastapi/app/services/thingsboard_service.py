@@ -27,13 +27,16 @@ class ThingsBoardService:
         }
         
         try:
-            response = requests.post(url, json=payload, timeout=10)
+            response = requests.post(url, json=payload, timeout=30)  # Aumentado timeout
             response.raise_for_status()
             self.token = response.json()["token"]
             print("Autenticado no ThingsBoard")
             return True
+        except requests.exceptions.Timeout:
+            print(f"Timeout ao autenticar no ThingsBoard (URL: {url})")
+            return False
         except Exception as e:
-            print(f"Erro ao autenticar no ThingsBoard: {e}")
+            print(f"Erro ao autenticar no ThingsBoard: {e} (URL: {url})")
             return False
     
     def _get_headers(self):
@@ -48,7 +51,7 @@ class ThingsBoardService:
         url = f"{self.host}/api/tenant/devices?pageSize=100&page=0"
         
         try:
-            response = requests.get(url, headers=self._get_headers(), timeout=10)
+            response = requests.get(url, headers=self._get_headers(), timeout=30)  # Aumentado timeout
             response.raise_for_status()
             devices = response.json().get("data", [])
             return devices
@@ -68,11 +71,11 @@ class ThingsBoardService:
             start_ts: Timestamp inicial em milissegundos
             end_ts: Timestamp final em milissegundos
         """
-        # Se não especificado, busca últimas 24 horas
+        # Se não especificado, busca últimos 2 anos (para pegar dados históricos)
         if not end_ts:
             end_ts = int(datetime.now().timestamp() * 1000)
         if not start_ts:
-            start_ts = int((datetime.now() - timedelta(days=1)).timestamp() * 1000)
+            start_ts = int((datetime.now() - timedelta(days=730)).timestamp() * 1000)  # 2 anos atrás
         
         keys_str = ",".join(keys)
         url = f"{self.host}/api/plugins/telemetry/DEVICE/{device_id}/values/timeseries"
@@ -80,14 +83,17 @@ class ThingsBoardService:
             "keys": keys_str,
             "startTs": start_ts,
             "endTs": end_ts,
-            "limit": 10000
+            "limit": 100000  # Aumentado para suportar mais dados históricos
         }
         
         try:
             response = requests.get(url, headers=self._get_headers(), 
-                                   params=params, timeout=30)
+                                   params=params, timeout=60)  # Aumentado para 60s (busca muitos dados)
             response.raise_for_status()
             return response.json()
+        except requests.exceptions.Timeout:
+            print(f"Timeout ao buscar telemetria do dispositivo {device_id}")
+            return {}
         except Exception as e:
             print(f"Erro ao buscar telemetria: {e}")
             return {}
@@ -97,12 +103,40 @@ class ThingsBoardService:
         url = f"{self.host}/api/plugins/telemetry/DEVICE/{device_id}/values/attributes"
         
         try:
-            response = requests.get(url, headers=self._get_headers(), timeout=10)
+            response = requests.get(url, headers=self._get_headers(), timeout=30)  # Aumentado timeout
             response.raise_for_status()
             return response.json()
         except Exception as e:
             print(f"Erro ao buscar atributos: {e}")
             return {}
+    
+    def update_device_name(self, device_id: str, new_name: str, new_label: str = None) -> bool:
+        """Atualiza o nome e label de um dispositivo"""
+        url = f"{self.host}/api/device/{device_id}"
+        
+        # Busca dispositivo atual
+        try:
+            get_url = f"{self.host}/api/device/{device_id}"
+            response = requests.get(get_url, headers=self._get_headers(), timeout=30)
+            response.raise_for_status()
+            device = response.json()
+            
+            # Atualiza nome e label
+            device['name'] = new_name
+            device['label'] = new_label if new_label else new_name
+            
+            # Atualiza dispositivo usando PUT (ThingsBoard requer PUT para updates)
+            response = requests.put(url, json=device, headers=self._get_headers(), timeout=30)
+            response.raise_for_status()
+            print(f"✅ Dispositivo atualizado: {device.get('name', 'unknown')} → {new_name}")
+            return True
+        except requests.exceptions.HTTPError as e:
+            error_detail = e.response.text if e.response else str(e)
+            print(f"❌ Erro HTTP ao atualizar dispositivo {device_id}: {e.response.status_code} - {error_detail}")
+            return False
+        except Exception as e:
+            print(f"❌ Erro ao atualizar dispositivo {device_id}: {e}")
+            return False
 
 
 def test_connection() -> bool:
