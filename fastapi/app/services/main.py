@@ -6,7 +6,11 @@ from typing import List, Dict, Optional
 from pydantic import BaseModel
 from .data_loader import load_local_data
 from .s3_service import upload_to_minio, test_connection, ensure_bucket_exists
-from .db_service import test_db_connection, get_table_count, insert_estacao, insert_dados_meteorologicos_batch
+from .db_service import (
+    test_db_connection, get_table_count, insert_estacao, 
+    insert_dados_meteorologicos_batch, insert_predicao_intensidade,
+    get_latest_weather_data, get_db_connection
+)
 from .csv_processor import parse_inmet_csv
 from .thingsboard_service import (
     test_connection as test_tb_connection,
@@ -20,6 +24,8 @@ from .mlflow_service import (
     predict_batch,
     get_model_info
 )
+import subprocess
+import sys
 
 app = FastAPI(title="INMET Data Pipeline - Dados Locais 2024/2025")
 
@@ -42,7 +48,10 @@ def home():
             "models_load": "/models/load",
             "models_info": "/models/info",
             "predict": "/predict",
-            "predict_batch": "/predict/batch"
+            "predict_batch": "/predict/batch",
+            "trendz_predict": "/trendz/predict (endpoint otimizado para Trendz)",
+            "trendz_predict_from_db": "/trendz/predict-from-db (predições em lote a partir do banco)",
+            "configure_trendz": "/configure-trendz (configura datasource PostgreSQL automaticamente)"
         }
     }
 
@@ -796,5 +805,254 @@ def make_batch_predictions(requests: List[PredictionRequest]):
             "total": len(results),
             "predictions": results
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================================
+# ENDPOINTS OTIMIZADOS PARA TRENDZ
+# ============================================================================
+
+class TrendzPredictionRequest(BaseModel):
+    """Modelo simplificado para Trendz - aceita dados flexíveis"""
+    codigo_wmo: Optional[str] = None
+    precipitacao_mm: float
+    pressao_estacao_mb: float
+    temperatura_ar_c: float
+    umidade_rel_horaria_pct: float
+    vento_velocidade_ms: float
+    # Campos opcionais
+    pressao_max_mb: Optional[float] = None
+    pressao_min_mb: Optional[float] = None
+    temperatura_max_c: Optional[float] = None
+    temperatura_min_c: Optional[float] = None
+    umidade_rel_max_pct: Optional[float] = None
+    umidade_rel_min_pct: Optional[float] = None
+    vento_direcao_graus: Optional[float] = None
+    vento_rajada_max_ms: Optional[float] = None
+    radiacao_global_kjm2: Optional[float] = None
+
+@app.post("/trendz/predict")
+def trendz_predict(request: TrendzPredictionRequest):
+    """
+    Endpoint otimizado para Trendz Analytics.
+    
+    Faz predição e salva automaticamente no banco de dados para visualização.
+    Aceita dados em formato flexível e retorna predição de intensidade de chuva.
+    """
+    try:
+        # Prepara dados para predição
+        from datetime import datetime
+        now = datetime.now()
+        
+        prediction_data = {
+            'precipitacao_mm': request.precipitacao_mm,
+            'pressao_estacao_mb': request.pressao_estacao_mb,
+            'pressao_max_mb': request.pressao_max_mb or request.pressao_estacao_mb,
+            'pressao_min_mb': request.pressao_min_mb or request.pressao_estacao_mb,
+            'temperatura_ar_c': request.temperatura_ar_c,
+            'temperatura_max_c': request.temperatura_max_c or request.temperatura_ar_c,
+            'temperatura_min_c': request.temperatura_min_c or request.temperatura_ar_c,
+            'umidade_rel_horaria_pct': request.umidade_rel_horaria_pct,
+            'umidade_rel_max_pct': request.umidade_rel_max_pct or request.umidade_rel_horaria_pct,
+            'umidade_rel_min_pct': request.umidade_rel_min_pct or request.umidade_rel_horaria_pct,
+            'vento_velocidade_ms': request.vento_velocidade_ms,
+            'vento_direcao_graus': request.vento_direcao_graus or 0.0,
+            'vento_rajada_max_ms': request.vento_rajada_max_ms or request.vento_velocidade_ms,
+            'radiacao_global_kjm2': request.radiacao_global_kjm2 or 0.0,
+            'ano': now.year,
+            'mes': now.month,
+            'dia': now.day,
+            'hora': now.hour,
+            'dia_semana': now.weekday()
+        }
+        
+        # Faz predição
+        result = predict(prediction_data)
+        
+        # Salva predição no banco de dados
+        try:
+            # Busca nome da estação se codigo_wmo foi fornecido
+            estacao_nome = None
+            if request.codigo_wmo:
+                conn = get_db_connection()
+                cur = conn.cursor()
+                try:
+                    cur.execute("SELECT nome FROM estacoes WHERE codigo_wmo = %s", (request.codigo_wmo,))
+                    row = cur.fetchone()
+                    if row:
+                        estacao_nome = row[0]
+                finally:
+                    cur.close()
+                    conn.close()
+            
+            insert_predicao_intensidade(
+                codigo_wmo=request.codigo_wmo or "UNKNOWN",
+                precipitacao_mm=request.precipitacao_mm,
+                pressao_estacao_mb=request.pressao_estacao_mb,
+                temperatura_ar_c=request.temperatura_ar_c,
+                umidade_rel_horaria_pct=request.umidade_rel_horaria_pct,
+                vento_velocidade_ms=request.vento_velocidade_ms,
+                intensidade_predita=result.get("prediction", "unknown"),
+                probabilidade_forte=result.get("probabilities", {}).get("forte"),
+                probabilidade_moderada=result.get("probabilities", {}).get("moderada"),
+                probabilidade_leve=result.get("probabilities", {}).get("leve"),
+                probabilidade_sem_chuva=result.get("probabilities", {}).get("sem_chuva"),
+                modelo_usado=result.get("model_name", "unknown"),
+                estacao_nome=estacao_nome
+            )
+        except Exception as save_error:
+            # Não falha a requisição se não conseguir salvar
+            print(f"⚠️  Aviso: Não foi possível salvar predição no banco: {save_error}")
+        
+        # Retorna formato simplificado para Trendz
+        return {
+            "status": "success",
+            "intensidade_chuva": result.get("prediction", "unknown"),
+            "probabilidades": result.get("probabilities", {}),
+            "modelo": result.get("model_name", "unknown"),
+            "codigo_wmo": request.codigo_wmo,
+            "timestamp": now.isoformat()
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Erro nos dados: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao fazer predição: {str(e)}")
+
+@app.post("/trendz/predict-from-db")
+def trendz_predict_from_db(limit: int = 10):
+    """
+    Busca dados recentes do banco e faz predições para todos.
+    Útil para popular o dashboard do Trendz com predições em lote.
+    """
+    try:
+        # Busca dados recentes
+        weather_data = get_latest_weather_data(limit=limit)
+        
+        if not weather_data:
+            return {
+                "status": "warning",
+                "message": "Nenhum dado meteorológico recente encontrado",
+                "predictions": []
+            }
+        
+        predictions = []
+        for data in weather_data:
+            try:
+                # Prepara dados para predição
+                from datetime import datetime
+                timestamp = data.get('timestamp_utc', datetime.now())
+                if isinstance(timestamp, str):
+                    timestamp = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                
+                prediction_data = {
+                    'precipitacao_mm': data.get('precipitacao_mm', 0.0) or 0.0,
+                    'pressao_estacao_mb': data.get('pressao_estacao_mb', 1013.0) or 1013.0,
+                    'pressao_max_mb': data.get('pressao_estacao_mb', 1013.0) or 1013.0,
+                    'pressao_min_mb': data.get('pressao_estacao_mb', 1013.0) or 1013.0,
+                    'temperatura_ar_c': data.get('temperatura_ar_c', 25.0) or 25.0,
+                    'temperatura_max_c': data.get('temperatura_ar_c', 25.0) or 25.0,
+                    'temperatura_min_c': data.get('temperatura_ar_c', 25.0) or 25.0,
+                    'umidade_rel_horaria_pct': data.get('umidade_rel_horaria_pct', 70.0) or 70.0,
+                    'umidade_rel_max_pct': data.get('umidade_rel_horaria_pct', 70.0) or 70.0,
+                    'umidade_rel_min_pct': data.get('umidade_rel_horaria_pct', 70.0) or 70.0,
+                    'vento_velocidade_ms': data.get('vento_velocidade_ms', 0.0) or 0.0,
+                    'vento_direcao_graus': 0.0,
+                    'vento_rajada_max_ms': data.get('vento_velocidade_ms', 0.0) or 0.0,
+                    'radiacao_global_kjm2': data.get('radiacao_global_kjm2', 0.0) or 0.0,
+                    'ano': timestamp.year,
+                    'mes': timestamp.month,
+                    'dia': timestamp.day,
+                    'hora': timestamp.hour,
+                    'dia_semana': timestamp.weekday()
+                }
+                
+                # Faz predição
+                result = predict(prediction_data)
+                
+                # Salva no banco
+                try:
+                    insert_predicao_intensidade(
+                        codigo_wmo=data.get('codigo_wmo', 'UNKNOWN'),
+                        precipitacao_mm=prediction_data['precipitacao_mm'],
+                        pressao_estacao_mb=prediction_data['pressao_estacao_mb'],
+                        temperatura_ar_c=prediction_data['temperatura_ar_c'],
+                        umidade_rel_horaria_pct=prediction_data['umidade_rel_horaria_pct'],
+                        vento_velocidade_ms=prediction_data['vento_velocidade_ms'],
+                        intensidade_predita=result.get("prediction", "unknown"),
+                        probabilidade_forte=result.get("probabilities", {}).get("forte"),
+                        probabilidade_moderada=result.get("probabilities", {}).get("moderada"),
+                        probabilidade_leve=result.get("probabilities", {}).get("leve"),
+                        probabilidade_sem_chuva=result.get("probabilities", {}).get("sem_chuva"),
+                        modelo_usado=result.get("model_name", "unknown"),
+                        estacao_nome=data.get('estacao_nome')
+                    )
+                except Exception as save_error:
+                    print(f"⚠️  Aviso ao salvar predição: {save_error}")
+                
+                predictions.append({
+                    "codigo_wmo": data.get('codigo_wmo'),
+                    "estacao_nome": data.get('estacao_nome'),
+                    "timestamp": timestamp.isoformat(),
+                    "intensidade_chuva": result.get("prediction"),
+                    "probabilidades": result.get("probabilities", {})
+                })
+            except Exception as e:
+                print(f"Erro ao processar predição para {data.get('codigo_wmo')}: {e}")
+                continue
+        
+        return {
+            "status": "success",
+            "total": len(predictions),
+            "predictions": predictions
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/configure-trendz")
+def configure_trendz():
+    """
+    Configura automaticamente o datasource PostgreSQL no Trendz Analytics.
+    
+    Este endpoint executa o script de configuração que:
+    1. Aguarda Trendz e ThingsBoard estarem prontos
+    2. Autentica no ThingsBoard
+    3. Cria datasource PostgreSQL no Trendz
+    4. Testa conexão com PostgreSQL
+    """
+    try:
+        script_path = Path(__file__).parent.parent / "scripts" / "configure_trendz_datasource.py"
+        
+        if not script_path.exists():
+            raise HTTPException(
+                status_code=404,
+                detail=f"Script de configuração não encontrado: {script_path}"
+            )
+        
+        # Executa o script Python
+        result = subprocess.run(
+            [sys.executable, str(script_path)],
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minutos
+        )
+        
+        if result.returncode == 0:
+            return {
+                "status": "success",
+                "message": "Trendz configurado com sucesso!",
+                "output": result.stdout
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Erro ao configurar Trendz",
+                "error": result.stderr,
+                "output": result.stdout
+            }
+    except subprocess.TimeoutExpired:
+        raise HTTPException(
+            status_code=504,
+            detail="Timeout ao configurar Trendz. Tente novamente ou configure manualmente."
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

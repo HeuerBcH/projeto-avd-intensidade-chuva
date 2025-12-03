@@ -196,3 +196,103 @@ def get_table_count(table_name: str) -> int:
         cur.close()
         conn.close()
 
+def insert_predicao_intensidade(
+    codigo_wmo: str,
+    precipitacao_mm: float,
+    pressao_estacao_mb: float,
+    temperatura_ar_c: float,
+    umidade_rel_horaria_pct: float,
+    vento_velocidade_ms: float,
+    intensidade_predita: str,
+    probabilidade_forte: Optional[float] = None,
+    probabilidade_moderada: Optional[float] = None,
+    probabilidade_leve: Optional[float] = None,
+    probabilidade_sem_chuva: Optional[float] = None,
+    modelo_usado: Optional[str] = None,
+    estacao_nome: Optional[str] = None
+):
+    """
+    Insere uma predição de intensidade de chuva na tabela predicoes_intensidade.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    try:
+        cur.execute("""
+            INSERT INTO predicoes_intensidade (
+                timestamp_utc, codigo_wmo, estacao_nome,
+                precipitacao_mm, pressao_estacao_mb, temperatura_ar_c,
+                umidade_rel_horaria_pct, vento_velocidade_ms,
+                intensidade_predita,
+                probabilidade_forte, probabilidade_moderada,
+                probabilidade_leve, probabilidade_sem_chuva,
+                modelo_usado
+            ) VALUES (
+                CURRENT_TIMESTAMP, %s, %s,
+                %s, %s, %s,
+                %s, %s,
+                %s,
+                %s, %s,
+                %s, %s,
+                %s
+            )
+        """, (
+            codigo_wmo, estacao_nome,
+            precipitacao_mm, pressao_estacao_mb, temperatura_ar_c,
+            umidade_rel_horaria_pct, vento_velocidade_ms,
+            intensidade_predita,
+            probabilidade_forte, probabilidade_moderada,
+            probabilidade_leve, probabilidade_sem_chuva,
+            modelo_usado
+        ))
+        
+        conn.commit()
+        return cur.rowcount
+    except Exception as e:
+        conn.rollback()
+        # Se a tabela não existir, tenta criar
+        if "does not exist" in str(e).lower() or "relation" in str(e).lower():
+            print("⚠️  Tabela predicoes_intensidade não existe. Execute o script 04_views_trendz.sql")
+        raise RuntimeError(f"Erro ao inserir predição: {e}")
+    finally:
+        cur.close()
+        conn.close()
+
+def get_latest_weather_data(limit: int = 100):
+    """
+    Retorna os dados meteorológicos mais recentes para fazer predições.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    try:
+        cur.execute("""
+            SELECT 
+                dm.codigo_wmo,
+                e.nome as estacao_nome,
+                dm.timestamp_utc,
+                dm.precipitacao_mm,
+                dm.pressao_estacao_mb,
+                dm.temperatura_ar_c,
+                dm.umidade_rel_horaria_pct,
+                dm.vento_velocidade_ms,
+                dm.radiacao_global_kjm2
+            FROM dados_meteorologicos dm
+            JOIN estacoes e ON dm.codigo_wmo = e.codigo_wmo
+            WHERE dm.timestamp_utc >= NOW() - INTERVAL '24 hours'
+            ORDER BY dm.timestamp_utc DESC
+            LIMIT %s
+        """, (limit,))
+        
+        columns = [desc[0] for desc in cur.description]
+        results = []
+        for row in cur.fetchall():
+            results.append(dict(zip(columns, row)))
+        
+        return results
+    except Exception as e:
+        raise RuntimeError(f"Erro ao buscar dados meteorológicos: {e}")
+    finally:
+        cur.close()
+        conn.close()
+

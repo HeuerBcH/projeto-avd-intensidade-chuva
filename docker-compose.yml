@@ -149,9 +149,13 @@ services:
       - TB_SERVER_WS_URL=ws://thingsboard:9090
       # Força o uso da configuração acima
       - TB_API_URL=http://thingsboard:9090
+      # Configuração de autenticação (usando credencial tenant)
+      - TB_DEFAULT_USERNAME=tenant@thingsboard.org
+      - TB_DEFAULT_PASSWORD=tenant
     volumes:
       - ./trendz/data:/data
       - ./trendz/logs:/var/log/trendz
+      - ./trendz/config:/config
     depends_on:
       postgres:
         condition: service_healthy
