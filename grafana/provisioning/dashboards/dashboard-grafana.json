@@ -1,0 +1,975 @@
+// Dashboard exportado do grafana, com as configuraçõe (está aqui apenas para deixar mais completo, não foram necessárias configurações extras pelo grafana)
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "description": "Distribuicao de registros por intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT intensidade_chuva, COALESCE(total_registros, 0) as total_registros FROM vw_grafico_barras_intensidade WHERE intensidade_chuva IS NOT NULL AND intensidade_chuva <> 'sem_chuva' ORDER BY CASE intensidade_chuva WHEN 'leve' THEN 1 WHEN 'moderada' THEN 2 WHEN 'forte' THEN 3 END;",
+          "refId": "A"
+        }
+      ],
+      "title": "Distribuição de Intensidade de Chuva",
+      "type": "barchart"
+    },
+    {
+      "description": "Precipitacao media por classe de intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "mm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "id": 26,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "code": "if(!data){return {}; } const frames = (data.series && data.series.length ? data.series : (data.frames && data.frames.length ? data.frames : [])); if(!frames.length){return {}; } const frame=frames[0]; if(!frame || !frame.fields || frame.fields.length < 2 || !frame.fields[0].values || !frame.fields[1].values){return {}; } const cats=frame.fields[0].values.toArray(); const vals=frame.fields[1].values.toArray(); const colors={sem_chuva:'#5794F2',leve:'#56A64B',moderada:'#FADE2A',forte:'#E24D42'}; return {tooltip:{trigger:'axis'}, xAxis:{type:'category', data:cats}, yAxis:{type:'value', name:'Precipitação média (mm)'}, series:[{type:'bar', data:vals.map((v,i)=>({value:v, itemStyle:{color:colors[cats[i]]||'#5794F2'}}))}]};",
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT intensidade_chuva, COALESCE(AVG(precipitacao_mm), 0) AS valor FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL AND intensidade_chuva <> 'sem_chuva' GROUP BY intensidade_chuva ORDER BY CASE intensidade_chuva WHEN 'leve' THEN 1 WHEN 'moderada' THEN 2 WHEN 'forte' THEN 3 END;",
+          "refId": "A"
+        }
+      ],
+      "title": "Precipitação por Classe (Estação)",
+      "type": "barchart"
+    },
+    {
+      "description": "Pressao atmosferica media por classe de intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 1200,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "pressurehpa"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 27,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "code": "if(!data){return {}; } const frames = (data.series && data.series.length ? data.series : (data.frames && data.frames.length ? data.frames : [])); if(!frames.length){return {}; } const frame=frames[0]; if(!frame || !frame.fields || frame.fields.length < 2 || !frame.fields[0].values || !frame.fields[1].values){return {}; } const cats=frame.fields[0].values.toArray(); const vals=frame.fields[1].values.toArray(); const colors={sem_chuva:'#5794F2',leve:'#56A64B',moderada:'#FADE2A',forte:'#E24D42'}; return {tooltip:{trigger:'axis'}, xAxis:{type:'category', data:cats}, yAxis:{type:'value', name:'Pressão média (mb)'}, series:[{type:'bar', data:vals.map((v,i)=>({value:v, itemStyle:{color:colors[cats[i]]||'#5794F2'}}))}]};",
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT intensidade_chuva, COALESCE(AVG(pressao_estacao_mb), 0) AS valor FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL AND intensidade_chuva <> 'sem_chuva' GROUP BY intensidade_chuva ORDER BY CASE intensidade_chuva WHEN 'leve' THEN 1 WHEN 'moderada' THEN 2 WHEN 'forte' THEN 3 END;",
+          "refId": "A"
+        }
+      ],
+      "title": "Pressão por Classe (Estação)",
+      "type": "barchart"
+    },
+    {
+      "description": "Umidade relativa media por classe de intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "id": 28,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "code": "if(!data){return {}; } const frames = (data.series && data.series.length ? data.series : (data.frames && data.frames.length ? data.frames : [])); if(!frames.length){return {}; } const frame=frames[0]; if(!frame || !frame.fields || frame.fields.length < 2 || !frame.fields[0].values || !frame.fields[1].values){return {}; } const cats=frame.fields[0].values.toArray(); const vals=frame.fields[1].values.toArray(); const colors={sem_chuva:'#5794F2',leve:'#56A64B',moderada:'#FADE2A',forte:'#E24D42'}; return {tooltip:{trigger:'axis'}, xAxis:{type:'category', data:cats}, yAxis:{type:'value', name:'Umidade média (%)'}, series:[{type:'bar', data:vals.map((v,i)=>({value:v, itemStyle:{color:colors[cats[i]]||'#5794F2'}}))}]};",
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT intensidade_chuva, COALESCE(AVG(umidade_rel_horaria_pct), 0) AS valor FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL AND intensidade_chuva <> 'sem_chuva' GROUP BY intensidade_chuva ORDER BY CASE intensidade_chuva WHEN 'leve' THEN 1 WHEN 'moderada' THEN 2 WHEN 'forte' THEN 3 END;",
+          "refId": "A"
+        }
+      ],
+      "title": "Umidade por Classe (Estação)",
+      "type": "barchart"
+    },
+    {
+      "description": "Velocidade media do vento por classe de intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 4,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "velocityms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 8
+      },
+      "id": 29,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "code": "if(!data){return {}; } const frames = (data.series && data.series.length ? data.series : (data.frames && data.frames.length ? data.frames : [])); if(!frames.length){return {}; } const frame=frames[0]; if(!frame || !frame.fields || frame.fields.length < 2 || !frame.fields[0].values || !frame.fields[1].values){return {}; } const cats=frame.fields[0].values.toArray(); const vals=frame.fields[1].values.toArray(); const colors={sem_chuva:'#5794F2',leve:'#56A64B',moderada:'#FADE2A',forte:'#E24D42'}; return {tooltip:{trigger:'axis'}, xAxis:{type:'category', data:cats}, yAxis:{type:'value', name:'Vento médio (m/s)'}, series:[{type:'bar', data:vals.map((v,i)=>({value:v, itemStyle:{color:colors[cats[i]]||'#5794F2'}}))}]};",
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT intensidade_chuva, COALESCE(AVG(vento_velocidade_ms), 0) AS valor FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL AND intensidade_chuva <> 'sem_chuva' GROUP BY intensidade_chuva ORDER BY CASE intensidade_chuva WHEN 'leve' THEN 1 WHEN 'moderada' THEN 2 WHEN 'forte' THEN 3 END;",
+          "refId": "A"
+        }
+      ],
+      "title": "Vento por Classe (Estação)",
+      "type": "barchart"
+    },
+    {
+      "description": "Serie temporal da precipitacao segmentada por intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "mm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 30,
+      "options": {
+        "code": "if(!data){return {}; } const frames = (data.series && data.series.length ? data.series : (data.frames && data.frames.length ? data.frames : [])); if(!frames.length){return {}; } const frame=frames[0]; if(!frame || !frame.fields || frame.fields.length < 3 || !frame.fields[0].values || !frame.fields[1].values || !frame.fields[2].values){return {}; } const t=frame.fields[0].values.toArray(); const vals=frame.fields[1].values.toArray(); const cats=frame.fields[2].values.toArray(); const colors={sem_chuva:'#5794F2',leve:'#56A64B',moderada:'#FADE2A',forte:'#E24D42'}; const seriesMap={}; for(let i=0;i<t.length;i++){ const c=cats[i]||'sem_chuva'; if(!seriesMap[c]){seriesMap[c]={name:c,type:'line',showSymbol:false,data:[]};} seriesMap[c].data.push([t[i],vals[i]]);} return {tooltip:{trigger:'axis'}, legend:{data:Object.keys(seriesMap)}, xAxis:{type:'time'}, yAxis:{type:'value', name:'Precipitação (mm)'}, series:Object.values(seriesMap)};",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT timestamp_utc AS time, precipitacao_mm AS valor, intensidade_chuva FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL AND precipitacao_mm IS NOT NULL AND precipitacao_mm <> 0 ORDER BY timestamp_utc LIMIT 10000;",
+          "refId": "A"
+        }
+      ],
+      "title": "Série Temporal - Precipitação (Estação)",
+      "type": "timeseries"
+    },
+    {
+      "description": "Serie temporal da pressao atmosferica segmentada por intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 1200,
+          "min": 800,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "pressurehpa"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 31,
+      "options": {
+        "code": "if(!data){return {}; } const frames = (data.series && data.series.length ? data.series : (data.frames && data.frames.length ? data.frames : [])); if(!frames.length){return {}; } const frame=frames[0]; if(!frame || !frame.fields || frame.fields.length < 3 || !frame.fields[0].values || !frame.fields[1].values || !frame.fields[2].values){return {}; } const t=frame.fields[0].values.toArray(); const vals=frame.fields[1].values.toArray(); const cats=frame.fields[2].values.toArray(); const colors={sem_chuva:'#5794F2',leve:'#56A64B',moderada:'#FADE2A',forte:'#E24D42'}; const seriesMap={}; for(let i=0;i<t.length;i++){ const c=cats[i]||'sem_chuva'; if(!seriesMap[c]){seriesMap[c]={name:c,type:'line',showSymbol:false,data:[]};} seriesMap[c].data.push([t[i],vals[i]]);} return {tooltip:{trigger:'axis'}, legend:{data:Object.keys(seriesMap)}, xAxis:{type:'time'}, yAxis:{type:'value', name:'Pressão (mb)'}, series:Object.values(seriesMap)};",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(timestamp_utc, '30m'), AVG(pressao_estacao_mb) AS valor, intensidade_chuva FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL AND pressao_estacao_mb IS NOT NULL AND pressao_estacao_mb <> 0 GROUP BY 1, intensidade_chuva ORDER BY 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "Série Temporal - Pressão (Estação)",
+      "type": "timeseries"
+    },
+    {
+      "description": "Serie temporal da umidade relativa segmentada por intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 32,
+      "options": {
+        "code": "if(!data){return {}; } const frames = (data.series && data.series.length ? data.series : (data.frames && data.frames.length ? data.frames : [])); if(!frames.length){return {}; } const frame=frames[0]; if(!frame || !frame.fields || frame.fields.length < 3 || !frame.fields[0].values || !frame.fields[1].values || !frame.fields[2].values){return {}; } const t=frame.fields[0].values.toArray(); const vals=frame.fields[1].values.toArray(); const cats=frame.fields[2].values.toArray(); const colors={sem_chuva:'#5794F2',leve:'#56A64B',moderada:'#FADE2A',forte:'#E24D42'}; const seriesMap={}; for(let i=0;i<t.length;i++){ const c=cats[i]||'sem_chuva'; if(!seriesMap[c]){seriesMap[c]={name:c,type:'line',showSymbol:false,data:[]};} seriesMap[c].data.push([t[i],vals[i]]);} return {tooltip:{trigger:'axis'}, legend:{data:Object.keys(seriesMap)}, xAxis:{type:'time'}, yAxis:{type:'value', name:'Umidade (%)'}, series:Object.values(seriesMap)};",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(timestamp_utc, '30m'), AVG(umidade_rel_horaria_pct) AS valor, intensidade_chuva FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL AND umidade_rel_horaria_pct IS NOT NULL AND umidade_rel_horaria_pct <> 0 GROUP BY 1, intensidade_chuva ORDER BY 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "Série Temporal - Umidade (Estação)",
+      "type": "timeseries"
+    },
+    {
+      "description": "Serie temporal da velocidade do vento segmentada por intensidade de chuva",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "velocityms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 33,
+      "options": {
+        "code": "if(!data){return {}; } const frames = (data.series && data.series.length ? data.series : (data.frames && data.frames.length ? data.frames : [])); if(!frames.length){return {}; } const frame=frames[0]; if(!frame || !frame.fields || frame.fields.length < 3 || !frame.fields[0].values || !frame.fields[1].values || !frame.fields[2].values){return {}; } const t=frame.fields[0].values.toArray(); const vals=frame.fields[1].values.toArray(); const cats=frame.fields[2].values.toArray(); const colors={sem_chuva:'#5794F2',leve:'#56A64B',moderada:'#FADE2A',forte:'#E24D42'}; const seriesMap={}; for(let i=0;i<t.length;i++){ const c=cats[i]||'sem_chuva'; if(!seriesMap[c]){seriesMap[c]={name:c,type:'line',showSymbol:false,data:[]};} seriesMap[c].data.push([t[i],vals[i]]);} return {tooltip:{trigger:'axis'}, legend:{data:Object.keys(seriesMap)}, xAxis:{type:'time'}, yAxis:{type:'value', name:'Vento (m/s)'}, series:Object.values(seriesMap)};",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql-inmet"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(timestamp_utc, '30m'), AVG(vento_velocidade_ms) AS valor, intensidade_chuva FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL AND vento_velocidade_ms IS NOT NULL AND vento_velocidade_ms <> 0 GROUP BY 1, intensidade_chuva ORDER BY 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "Série Temporal - Vento (Estação)",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "inmet",
+    "chuva",
+    "meteorologia"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "postgresql-inmet"
+        },
+        "definition": "SELECT DISTINCT uf FROM estacoes ORDER BY uf;",
+        "includeAll": true,
+        "label": "UF",
+        "multi": true,
+        "name": "uf",
+        "options": [],
+        "query": {
+          "query": "SELECT DISTINCT uf FROM estacoes ORDER BY uf;",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "postgresql-inmet"
+        },
+        "definition": "SELECT DISTINCT nome FROM estacoes WHERE ($uf = 'All' OR uf IN ($uf)) ORDER BY nome;",
+        "includeAll": true,
+        "label": "Estação",
+        "multi": true,
+        "name": "estacao",
+        "options": [],
+        "query": {
+          "query": "SELECT DISTINCT nome FROM estacoes WHERE ($uf = 'All' OR uf IN ($uf)) ORDER BY nome;",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "postgresql-inmet"
+        },
+        "definition": "SELECT DISTINCT intensidade_chuva FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL ORDER BY CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+        "includeAll": true,
+        "label": "Intensidade",
+        "multi": true,
+        "name": "intensidade",
+        "options": [],
+        "query": {
+          "query": "SELECT DISTINCT intensidade_chuva FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL ORDER BY CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "2024-01-01T00:00:00.000Z",
+    "to": "2024-01-03T23:00:00.000Z"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Intensidade de Chuva - INMET",
+  "uid": "intensidade-chuva-inmet",
+  "version": 25
+}

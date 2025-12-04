@@ -349,6 +349,22 @@ Dashboards interativos para visualização de dados.
 
 **Dashboard Provisionado:** "Classificação de Intensidade de Chuva - INMET"
 
+**Plugins instalados automaticamente:**
+
+- Nenhum plugin adicional é necessário para o dashboard principal de intensidade de chuva. Ele foi implementado apenas com **painéis nativos** do Grafana (`barchart` e `timeseries`).
+
+> Observação: o arquivo `grafana/provisioning/dashboards/dashboard-grafana.json` é um **dashboard exportado diretamente do Grafana**, mantido apenas como referência das configurações visuais finais. Ele não é usado pelo provisionamento (que aponta para `intensidade-chuva.json`) e não exige nenhuma configuração extra.
+
+### Interações no dashboard de intensidade de chuva
+
+- **Seleção de estação:** use os filtros no topo do dashboard (`UF` e `Estação`) para escolher uma ou mais estações.
+- **Seleção de intensidade:** o filtro `Intensidade` permite focar em uma ou mais classes (leve, moderada, forte).
+- **Gráficos disponíveis:**
+  - Gráfico de barras com a **distribuição de intensidade de chuva** (leve, moderada, forte), excluindo explicitamente a classe `sem_chuva`.
+  - Quatro gráficos de barras nativos mostrando, por classe de intensidade, a **precipitação média (mm)**, **pressão média (hPa)**, **umidade relativa média (%)** e **velocidade média do vento (m/s)**.
+  - Quatro gráficos de séries temporais nativos para as mesmas métricas, com dados agregados em janelas de **30 minutos (média)** para reduzir a densidade de pontos e facilitar a análise.
+  - Eixos Y configurados com unidades e faixas adequadas (por exemplo, umidade de 0–100%, pressão de 800–1200 hPa, vento até 4 m/s).
+
 ### JupyterLab (Porta 1010)
 Ambiente de análise e modelagem com notebooks.
 
