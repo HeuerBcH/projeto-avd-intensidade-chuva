@@ -9,14 +9,14 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 # Configurações
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 EXPERIMENT_NAME = "intensidade_chuva_classificacao"
 
-# Configuração S3 (MinIO)
-os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID', 'minioadmin')
-os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY', 'minioadmin')
-os.environ['MLFLOW_S3_ENDPOINT_URL'] = os.getenv('MLFLOW_S3_ENDPOINT_URL', 'http://minio:9000')
-os.environ['AWS_S3_FORCE_PATH_STYLE'] = os.getenv('AWS_S3_FORCE_PATH_STYLE', 'true')
+# Configuracao S3 (MinIO) - usa variaveis do .env
+os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID')
+os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY')
+os.environ['MLFLOW_S3_ENDPOINT_URL'] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
+os.environ['AWS_S3_FORCE_PATH_STYLE'] = 'true'
 
 # Cache do modelo carregado
 _loaded_model = None

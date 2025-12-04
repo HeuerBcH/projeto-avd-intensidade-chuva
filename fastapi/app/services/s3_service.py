@@ -5,12 +5,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError
 
-# Carrega as variáveis de ambiente do .env
-# Tenta carregar do diretório atual (services/) primeiro, depois do diretório pai
-env_path = Path(__file__).resolve().parent / ".env"
-if not env_path.exists():
-    env_path = Path(__file__).resolve().parents[1] / ".env"
-load_dotenv(env_path)
+# As variaveis de ambiente sao carregadas automaticamente pelo docker-compose.yml
+# via env_file: .env (nao precisa load_dotenv dentro do container)
 
 # Cria o cliente S3 (compatível com MinIO ou AWS)
 s3 = boto3.client(
@@ -25,7 +21,7 @@ def ensure_bucket_exists(bucket_name: str = None):
     Garante que o bucket existe, criando-o se necessário.
     """
     if bucket_name is None:
-        bucket_name = os.getenv("S3_BUCKET_NAME", "inmet-data")
+        bucket_name = os.getenv("S3_BUCKET_NAME")
     
     try:
         # Tenta verificar se o bucket existe
@@ -62,7 +58,7 @@ def upload_to_minio(file_path: Path):
     Envia o arquivo local para o bucket configurado no .env.
     Garante que o bucket existe antes de fazer upload.
     """
-    bucket = os.getenv("S3_BUCKET_NAME", "inmet-data")
+    bucket = os.getenv("S3_BUCKET_NAME")
     key = f"raw/{file_path.name}"
 
     # Garante que o bucket existe

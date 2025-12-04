@@ -7,9 +7,9 @@ import os
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 
-THINGSBOARD_HOST = os.getenv("THINGSBOARD_HOST", "http://thingsboard:9090")
-THINGSBOARD_USER = os.getenv("THINGSBOARD_USER", "tenant@thingsboard.org")
-THINGSBOARD_PASSWORD = os.getenv("THINGSBOARD_PASSWORD", "tenant")
+THINGSBOARD_HOST = os.getenv("THINGSBOARD_HOST")
+THINGSBOARD_USER = os.getenv("THINGSBOARD_USER")
+THINGSBOARD_PASSWORD = os.getenv("THINGSBOARD_PASSWORD")
 
 
 class ThingsBoardService:

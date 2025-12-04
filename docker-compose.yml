@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./fastapi/app/.env
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
@@ -27,16 +27,16 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: inmet_db
-      POSTGRES_USER: inmet_user
-      POSTGRES_PASSWORD: inmet_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
       - ./sql_scripts:/docker-entrypoint-initdb.d
     networks:
       - avd-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U inmet_user -d inmet_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,8 +50,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - ./data/minio:/data
     networks:
@@ -66,7 +66,7 @@ services:
     volumes:
       - ./notebooks:/home/jovyan/work
     environment:
-      JUPYTER_TOKEN: avd2025
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN}
     networks:
       - avd-network
     depends_on:
@@ -79,11 +79,11 @@ services:
     ports:
       - "5000:5000"
     environment:
-      MLFLOW_TRACKING_URI: http://0.0.0.0:5000
+      MLFLOW_TRACKING_URI: ${MLFLOW_TRACKING_URI}
       # Configuração S3 (MinIO) para artifact store
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: minioadmin
-      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      MLFLOW_S3_ENDPOINT_URL: ${MLFLOW_S3_ENDPOINT_URL}
       # Força uso de path-style (necessário para MinIO)
       AWS_S3_FORCE_PATH_STYLE: "true"
     volumes:
@@ -106,8 +106,8 @@ services:
       # Configuração do PostgreSQL
       - TB_DATABASE_ENTITIES_TYPE=sql
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/thingsboard
-      - SPRING_DATASOURCE_USERNAME=inmet_user
-      - SPRING_DATASOURCE_PASSWORD=inmet_password
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
       # Configurações JVM
       - JAVA_OPTS=-Xms256m -Xmx1024m
@@ -128,42 +128,42 @@ services:
     restart: unless-stopped
 
   # TRENDZ ANALYTICS - Dashboard de visualização
-  trendz:
-    image: thingsboard/trendz:latest
-    container_name: trendz
-    ports:
-      - "8888:8888"
-    environment:
-      # URL pública do Trendz
-      - TRENDZ_URL=http://localhost:8888
-      # Configuração do PostgreSQL (dentro do Docker, use o nome do serviço)
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/inmet_db
-      - SPRING_DATASOURCE_USERNAME=inmet_user
-      - SPRING_DATASOURCE_PASSWORD=inmet_password
-      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
-      # Configurações JVM
-      - JAVA_OPTS=-Xms256m -Xmx1024m
-      # Configurações do ThingsBoard (necessário para autenticação)
-      # IMPORTANTE: Use o nome do serviço Docker, não localhost
-      - TB_SERVER_URL=http://thingsboard:9090
-      - TB_SERVER_WS_URL=ws://thingsboard:9090
-      # Força o uso da configuração acima
-      - TB_API_URL=http://thingsboard:9090
-      # Configuração de autenticação (usando credencial tenant)
-      - TB_DEFAULT_USERNAME=tenant@thingsboard.org
-      - TB_DEFAULT_PASSWORD=tenant
-    volumes:
-      - ./trendz/data:/data
-      - ./trendz/logs:/var/log/trendz
-      - ./trendz/config:/config
-    depends_on:
-      postgres:
-        condition: service_healthy
-      thingsboard:
-        condition: service_started
-    networks:
-      - avd-network
-    restart: unless-stopped
+#  trendz:
+#    image: thingsboard/trendz:latest
+#    container_name: trendz
+#    ports:
+#      - "8888:8888"
+#    environment:
+#      # URL pública do Trendz
+#      - TRENDZ_URL=http://localhost:8888
+#      # Configuração do PostgreSQL (dentro do Docker, use o nome do serviço)
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/inmet_db
+#      - SPRING_DATASOURCE_USERNAME=inmet_user
+#      - SPRING_DATASOURCE_PASSWORD=inmet_password
+#      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+#      # Configurações JVM
+#      - JAVA_OPTS=-Xms256m -Xmx1024m
+#      # Configurações do ThingsBoard (necessário para autenticação)
+#      # IMPORTANTE: Use o nome do serviço Docker, não localhost
+#      - TB_SERVER_URL=http://thingsboard:9090
+#      - TB_SERVER_WS_URL=ws://thingsboard:9090
+#      # Força o uso da configuração acima
+#      - TB_API_URL=http://thingsboard:9090
+#      # Configuração de autenticação (usando credencial tenant)
+#      - TB_DEFAULT_USERNAME=tenant@thingsboard.org
+#      - TB_DEFAULT_PASSWORD=tenant
+#    volumes:
+#      - ./trendz/data:/data
+#      - ./trendz/logs:/var/log/trendz
+#      - ./trendz/config:/config
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      thingsboard:
+#        condition: service_started
+#    networks:
+#      - avd-network
+#    restart: unless-stopped
 
 networks:
   avd-network:

@@ -9,11 +9,8 @@ from typing import List, Dict, Optional
 import pandas as pd
 from datetime import datetime
 
-# Carrega variáveis de ambiente
-env_path = Path(__file__).resolve().parent / ".env"
-if not env_path.exists():
-    env_path = Path(__file__).resolve().parents[1] / ".env"
-load_dotenv(env_path)
+# As variaveis de ambiente sao carregadas automaticamente pelo docker-compose.yml
+# via env_file: .env (nao precisa load_dotenv dentro do container)
 
 def get_db_connection():
     """
@@ -21,11 +18,11 @@ def get_db_connection():
     """
     try:
         conn = psycopg2.connect(
-            host=os.getenv("POSTGRES_HOST", "postgres"),
-            port=os.getenv("POSTGRES_PORT", "5432"),
-            database=os.getenv("POSTGRES_DB", "inmet_db"),
-            user=os.getenv("POSTGRES_USER", "inmet_user"),
-            password=os.getenv("POSTGRES_PASSWORD", "inmet_password")
+            host=os.getenv("POSTGRES_HOST"),
+            port=os.getenv("POSTGRES_PORT"),
+            database=os.getenv("POSTGRES_DB"),
+            user=os.getenv("POSTGRES_USER"),
+            password=os.getenv("POSTGRES_PASSWORD")
         )
         return conn
     except Exception as e:

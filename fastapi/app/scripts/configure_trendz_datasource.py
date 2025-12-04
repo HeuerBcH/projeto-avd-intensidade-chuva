@@ -9,17 +9,17 @@ import sys
 from typing import Dict, Optional
 
 # Configurações
-TRENDZ_URL = os.getenv("TRENDZ_URL", "http://localhost:8888")
-THINGSBOARD_URL = os.getenv("TB_SERVER_URL", "http://thingsboard:9090")
-TB_USERNAME = os.getenv("TB_DEFAULT_USERNAME", "tenant@thingsboard.org")
-TB_PASSWORD = os.getenv("TB_DEFAULT_PASSWORD", "tenant")
+TRENDZ_URL = os.getenv("TRENDZ_URL")
+THINGSBOARD_URL = os.getenv("THINGSBOARD_HOST")
+TB_USERNAME = os.getenv("THINGSBOARD_USER")
+TB_PASSWORD = os.getenv("THINGSBOARD_PASSWORD")
 
-# Configuração do PostgreSQL
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "inmet_db")
-POSTGRES_USER = os.getenv("POSTGRES_USER", "inmet_user")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "inmet_password")
+# Configuracao do PostgreSQL
+POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 
 class TrendzConfigurator:

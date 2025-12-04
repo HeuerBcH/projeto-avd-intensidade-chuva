@@ -12,9 +12,9 @@ import sys
 
 # Configurações do ThingsBoard
 import os
-THINGSBOARD_HOST = os.getenv("THINGSBOARD_HOST", "http://thingsboard:9090")
-THINGSBOARD_USER = os.getenv("THINGSBOARD_USER", "tenant@thingsboard.org")
-THINGSBOARD_PASSWORD = os.getenv("THINGSBOARD_PASSWORD", "tenant")
+THINGSBOARD_HOST = os.getenv("THINGSBOARD_HOST")
+THINGSBOARD_USER = os.getenv("THINGSBOARD_USER")
+THINGSBOARD_PASSWORD = os.getenv("THINGSBOARD_PASSWORD")
 
 # Estações meteorológicas de Pernambuco (serão extraídas automaticamente dos CSVs)
 ESTACOES = {}
