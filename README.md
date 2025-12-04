@@ -10,6 +10,7 @@ Pipeline completo de Business Intelligence para análise e classificação autom
 **Disciplina:** Análise e Visualização de Dados - 2025.2  
 **Instituição:** CESAR School  
 **Problema:** 7.8 - Classificar Intensidade da Chuva
+**Integrantes** - Bernardo Heuer (@HeuerBcH), Erick Belo, Eduardo Roma, Leonardo Méllo (@Leonardo-Mello22), Vinicius Beltrão, Rodrigo Nunes (@rodrigonuness), Silvio Fittipaldi (@SilvioFittipald1).
 
 ---
 
