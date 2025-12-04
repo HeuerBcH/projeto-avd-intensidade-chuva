@@ -248,6 +248,82 @@ GROUP BY codigo_wmo, DATE(timestamp_utc), intensidade_chuva
 ORDER BY data DESC, codigo_wmo;
 
 -- ============================================================
+-- VIEW 10: Predições ML (Machine Learning)
+-- Para visualização de predições geradas por modelos ML
+-- ============================================================
+CREATE VIEW vw_predicoes_ml AS
+SELECT 
+    id,
+    timestamp_utc as time,
+    codigo_wmo,
+    estacao_nome,
+    precipitacao_mm,
+    pressao_estacao_mb,
+    temperatura_ar_c,
+    umidade_rel_horaria_pct,
+    vento_velocidade_ms,
+    intensidade_predita,
+    probabilidade_forte,
+    probabilidade_moderada,
+    probabilidade_leve,
+    probabilidade_sem_chuva,
+    modelo_usado,
+    created_at
+FROM predicoes_intensidade
+ORDER BY timestamp_utc DESC;
+
+-- ============================================================
+-- VIEW 11: Comparação ML vs Classificação SQL
+-- Compara predições ML com classificação por regras SQL
+-- ============================================================
+CREATE VIEW vw_comparacao_ml_sql AS
+SELECT 
+    dm.timestamp_utc as time,
+    dm.codigo_wmo,
+    e.nome as estacao_nome,
+    dm.precipitacao_mm,
+    dm.intensidade_chuva as classificacao_sql,
+    pi.intensidade_predita as classificacao_ml,
+    CASE 
+        WHEN dm.intensidade_chuva = pi.intensidade_predita THEN 'match'
+        ELSE 'diferenca'
+    END as status_comparacao,
+    pi.probabilidade_forte,
+    pi.probabilidade_moderada,
+    pi.probabilidade_leve,
+    pi.probabilidade_sem_chuva,
+    pi.modelo_usado
+FROM dados_meteorologicos dm
+JOIN estacoes e ON dm.codigo_wmo = e.codigo_wmo
+LEFT JOIN predicoes_intensidade pi ON 
+    dm.codigo_wmo = pi.codigo_wmo 
+    AND DATE(dm.timestamp_utc) = DATE(pi.timestamp_utc)
+    AND EXTRACT(HOUR FROM dm.timestamp_utc) = EXTRACT(HOUR FROM pi.timestamp_utc)
+WHERE dm.intensidade_chuva IS NOT NULL
+ORDER BY dm.timestamp_utc DESC;
+
+-- ============================================================
+-- VIEW 12: Estatísticas de Predições ML
+-- Resumo estatístico das predições ML
+-- ============================================================
+CREATE VIEW vw_estatisticas_predicoes_ml AS
+SELECT 
+    COUNT(*) as total_predicoes,
+    COUNT(DISTINCT codigo_wmo) as estacoes_com_predicoes,
+    MIN(timestamp_utc) as primeira_predicao,
+    MAX(timestamp_utc) as ultima_predicao,
+    SUM(CASE WHEN intensidade_predita = 'sem_chuva' THEN 1 ELSE 0 END) as predicoes_sem_chuva,
+    SUM(CASE WHEN intensidade_predita = 'leve' THEN 1 ELSE 0 END) as predicoes_leve,
+    SUM(CASE WHEN intensidade_predita = 'moderada' THEN 1 ELSE 0 END) as predicoes_moderada,
+    SUM(CASE WHEN intensidade_predita = 'forte' THEN 1 ELSE 0 END) as predicoes_forte,
+    COUNT(DISTINCT modelo_usado) as modelos_utilizados,
+    AVG(probabilidade_forte) as prob_media_forte,
+    AVG(probabilidade_moderada) as prob_media_moderada,
+    AVG(probabilidade_leve) as prob_media_leve,
+    AVG(probabilidade_sem_chuva) as prob_media_sem_chuva
+FROM predicoes_intensidade;
+
+-- ============================================================
 -- COMENTÁRIOS NAS VIEWS
 -- ============================================================
 COMMENT ON VIEW vw_grafico_barras_intensidade IS 'Gráfico de barras por classe de intensidade de chuva';
@@ -259,4 +335,7 @@ COMMENT ON VIEW vw_agregacao_mensal_intensidade IS 'Agregação mensal de intens
 COMMENT ON VIEW vw_correlacao_intensidade IS 'Correlação entre variáveis meteorológicas e intensidade';
 COMMENT ON VIEW vw_resumo_geral IS 'Resumo geral para cards e métricas principais';
 COMMENT ON VIEW vw_heatmap_correlacao IS 'Dados para visualização de heatmap de correlação';
+COMMENT ON VIEW vw_predicoes_ml IS 'Predições de intensidade geradas por modelos de Machine Learning';
+COMMENT ON VIEW vw_comparacao_ml_sql IS 'Comparação entre classificação SQL (regras) e predições ML';
+COMMENT ON VIEW vw_estatisticas_predicoes_ml IS 'Estatísticas gerais das predições ML';
 

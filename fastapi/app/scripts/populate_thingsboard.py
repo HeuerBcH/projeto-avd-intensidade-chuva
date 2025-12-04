@@ -274,21 +274,38 @@ def main():
     
     # Descobre estações a partir dos CSVs
     # Tenta diferentes caminhos (local vs Docker)
-    data_dir = Path("fastapi/app/data/raw")
-    if not data_dir.exists():
-        data_dir = Path("/app/data/raw")  # Caminho dentro do container
-    if not data_dir.exists():
-        data_dir = Path("../fastapi/app/data/raw")  # Caminho relativo alternativo
+    possible_paths = [
+        Path("/app/data/raw"),  # Caminho dentro do container (prioridade)
+        Path("fastapi/app/data/raw"),  # Caminho relativo
+        Path("../fastapi/app/data/raw"),  # Alternativo
+        Path(__file__).parent.parent / "data" / "raw"  # Relativo ao script
+    ]
     
-    if not data_dir.exists():
-        print(f"Pasta não encontrada: {data_dir}")
+    data_dir = None
+    for path in possible_paths:
+        if path.exists():
+            csv_files = list(path.glob("*.csv")) + list(path.glob("*.CSV"))
+            if csv_files:
+                data_dir = path
+                print(f"\nEncontrada pasta de dados: {data_dir}")
+                print(f"   {len(csv_files)} arquivos CSV encontrados")
+                break
+    
+    if not data_dir:
+        print("\nERRO: Pasta de dados nao encontrada!")
+        print("   Procurado em:")
+        for path in possible_paths:
+            print(f"   - {path}")
+        print("\n   Certifique-se de que os arquivos CSV estao em: fastapi/app/data/raw/")
         sys.exit(1)
     
-    print(f"\nDescobrin estacoes em {data_dir}...")
+    print(f"\nDescobrindo estacoes em {data_dir}...")
     discovered_stations = discover_stations(data_dir)
     
     if not discovered_stations:
         print("ERRO: Nenhuma estacao encontrada nos arquivos CSV")
+        print("   Verifique se os arquivos CSV tem o formato correto do INMET")
+        print("   Os arquivos devem ter informacoes de estacao nas primeiras linhas")
         sys.exit(1)
     
     print(f"Encontradas {len(discovered_stations)} estacoes:")
@@ -296,12 +313,23 @@ def main():
         print(f"   - {codigo}: {info['nome']}")
     
     # Conecta ao ThingsBoard
-    print(f"\nConectando ao ThingsBoard...")
-    client = ThingsBoardClient(THINGSBOARD_HOST, THINGSBOARD_USER, THINGSBOARD_PASSWORD)
-    
-    if not client.token:
-        print("ERRO: Nao foi possivel conectar ao ThingsBoard")
-        print("Certifique-se de que o ThingsBoard esta rodando em http://localhost:9090")
+    print(f"\nConectando ao ThingsBoard em {THINGSBOARD_HOST}...")
+    try:
+        client = ThingsBoardClient(THINGSBOARD_HOST, THINGSBOARD_USER, THINGSBOARD_PASSWORD)
+        
+        if not client.token:
+            print("ERRO: Nao foi possivel autenticar no ThingsBoard")
+            print(f"   Host: {THINGSBOARD_HOST}")
+            print(f"   Usuario: {THINGSBOARD_USER}")
+            print("   Verifique:")
+            print("   1. Se o ThingsBoard esta rodando: docker ps | grep thingsboard")
+            print("   2. Se as credenciais estao corretas no arquivo .env")
+            print("   3. Se o ThingsBoard esta acessivel na rede Docker")
+            sys.exit(1)
+    except Exception as e:
+        print(f"ERRO ao conectar ao ThingsBoard: {e}")
+        print(f"   Host: {THINGSBOARD_HOST}")
+        print("   Verifique se o ThingsBoard esta rodando e acessivel")
         sys.exit(1)
     
     # Cria dispositivos para cada estação

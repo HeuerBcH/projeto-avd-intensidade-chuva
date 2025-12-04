@@ -2,7 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: PostgreSQL INMET
-    uid: PostgreSQL INMET
+    uid: postgresql-inmet
     type: postgres
     access: proxy
     url: postgres:5432

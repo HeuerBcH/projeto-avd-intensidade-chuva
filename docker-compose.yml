@@ -70,7 +70,12 @@ services:
     networks:
       - avd-network
     depends_on:
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      mlflow:
+        condition: service_started
 
   # MLFLOW - Registro e versionamento de modelos
   mlflow:
@@ -138,9 +143,10 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_INSTALL_PLUGINS=
       - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
     volumes:
       - ./grafana/data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
     depends_on:
       postgres:
@@ -148,6 +154,12 @@ services:
     networks:
       - avd-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 networks:
   avd-network:
