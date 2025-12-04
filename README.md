@@ -1,210 +1,550 @@
 # 🌧️ Pipeline de BI - Classificação de Intensidade de Chuva
 
-Pipeline completo de Business Intelligence para análise e classificação de intensidade de precipitação usando dados do INMET.
+[![Docker](https://img.shields.io/badge/Docker-Required-blue)](https://www.docker.com/)
+[![Python](https://img.shields.io/badge/Python-3.10+-green)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-## 📋 Estrutura do Projeto
+Pipeline completo de Business Intelligence para análise e classificação automática de intensidade de precipitação utilizando dados meteorológicos do INMET (Instituto Nacional de Meteorologia).
+
+**Disciplina:** Análise e Visualização de Dados - 2025.2  
+**Instituição:** CESAR School  
+**Problema:** 7.8 - Classificar Intensidade da Chuva
+
+---
+
+## 📋 Índice
+
+- [Sobre o Projeto](#-sobre-o-projeto)
+- [Características](#-características)
+- [Arquitetura](#-arquitetura)
+- [Pré-requisitos](#-pré-requisitos)
+- [Instalação](#-instalação)
+- [Uso](#-uso)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Serviços](#-serviços)
+- [Documentação](#-documentação)
+- [Troubleshooting](#-troubleshooting)
+- [Contribuindo](#-contribuindo)
+- [Licença](#-licença)
+
+---
+
+## 🎯 Sobre o Projeto
+
+Este projeto implementa um pipeline completo de Business Intelligence para análise de dados meteorológicos, com foco na classificação automática de intensidade de precipitação. O sistema integra coleta de dados, armazenamento, processamento, modelagem de machine learning e visualização interativa.
+
+### Objetivos
+
+- ✅ Coletar e processar dados meteorológicos do INMET
+- ✅ Classificar automaticamente a intensidade de chuva em 4 categorias
+- ✅ Treinar e versionar modelos de machine learning
+- ✅ Visualizar dados e resultados em dashboards interativos
+- ✅ Fornecer API para predições em tempo real
+
+### Classificação de Intensidade
+
+O sistema classifica a precipitação em quatro categorias:
+
+| Categoria | Limiar | Descrição |
+|-----------|--------|-----------|
+| **Sem chuva** | 0 mm | Ausência de precipitação |
+| **Leve** | 0.1 - 2.5 mm/h | Chuva fraca |
+| **Moderada** | 2.6 - 10 mm/h | Chuva moderada |
+| **Forte** | > 10 mm/h | Chuva intensa |
+
+---
+
+## ✨ Características
+
+- 🐳 **Containerizado**: Toda a infraestrutura em Docker Compose
+- 🚀 **Setup Automático**: Script de inicialização que configura tudo
+- 📊 **Dashboards Interativos**: Grafana com 20+ visualizações prontas
+- 🤖 **Machine Learning**: Modelos treinados e versionados com MLFlow
+- 🔄 **Pipeline Completo**: Da coleta à visualização
+- 📈 **Análise Temporal**: Visualizações de séries temporais
+- 🎨 **Visualizações Diversas**: Barras, linhas, heatmaps, tabelas, etc.
+- 🔌 **API REST**: Endpoints para ingestão e predição
+
+---
+
+## 🏗️ Arquitetura
 
 ```
-projeto-avd-intensidade-chuva/
-├── docker-compose.yml          # Orquestração dos serviços
-├── fastapi/                    # API de ingestão de dados
-├── notebooks/                  # Análise e modelagem ML
-├── sql_scripts/                # Scripts SQL (schema, views)
-├── mlflow/                     # Experimentos e modelos ML
-├── trendz/                     # Dashboards Trendz Analytics
-└── data/                       # Dados (PostgreSQL, MinIO)
+┌─────────────┐
+│   CSVs      │
+│  (INMET)    │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐     ┌──────────────┐
+│ ThingsBoard │────▶│   FastAPI    │
+│  (IoT)      │     │  (Ingestão)  │
+└─────────────┘     └──────┬───────┘
+                           │
+           ┌───────────────┼───────────────┐
+           ▼               ▼               ▼
+    ┌──────────┐    ┌────────────┐  ┌──────────┐
+    │  MinIO   │    │ PostgreSQL │  │ Jupyter  │
+    │   (S3)   │    │   (BD)     │  │ Notebooks│
+    └──────────┘    └──────┬─────┘  └─────┬────┘
+                           │              │
+                           ▼              ▼
+                    ┌────────────┐  ┌──────────┐
+                    │   MLFlow   │  │ Grafana  │
+                    │  (ML Ops)  │  │(Viz)     │
+                    └────────────┘  └──────────┘
 ```
 
-## 🚀 Início Rápido
+### Fluxo de Dados
 
-### 1. Subir os Serviços
+1. **Coleta**: Arquivos CSV do INMET são processados
+2. **Ingestão**: FastAPI coleta dados e armazena em MinIO e PostgreSQL
+3. **Tratamento**: Notebooks Jupyter processam e classificam dados
+4. **Modelagem**: Modelos ML são treinados e versionados no MLFlow
+5. **Visualização**: Grafana consome dados do PostgreSQL
+6. **Predição**: API permite predições em tempo real
 
+---
+
+## 📦 Pré-requisitos
+
+Antes de começar, certifique-se de ter instalado:
+
+- **Docker Desktop** ([Download](https://www.docker.com/products/docker-desktop))
+- **Git** ([Download](https://git-scm.com/downloads))
+- **PowerShell** (Windows) ou **Bash** (Linux/Mac)
+- **~5GB** de espaço em disco livre
+
+---
+
+## 🚀 Instalação
+
+### 1. Clone o Repositório
+
+```bash
+git clone <url-do-repositorio>
+cd projeto-avd-intensidade-chuva
+```
+
+### 2. Execute o Script de Inicialização
+
+**Windows:**
 ```powershell
-docker-compose up -d
+.\start.ps1
 ```
 
-### 2. Executar Scripts SQL
-
-**⚠️ IMPORTANTE: No PowerShell, use um destes comandos:**
-
-**Opção 1: Script PowerShell (Recomendado)**
-```powershell
-.\executar_sql.ps1 sql_scripts/04_views_trendz.sql
+**Linux/Mac:**
+```bash
+chmod +x start.sh
+./start.sh
 ```
 
-**Opção 2: Comando direto PowerShell**
-```powershell
-Get-Content sql_scripts/04_views_trendz.sql | docker exec -i postgres-inmet psql -U inmet_user -d inmet_db
+O script irá automaticamente:
+- ✅ Verificar se o Docker está rodando
+- ✅ Criar estrutura de diretórios
+- ✅ Criar arquivo `.env` com configurações
+- ✅ Subir todos os containers Docker
+- ✅ Aguardar serviços ficarem prontos
+
+**⏱️ Tempo estimado:** 2-3 minutos na primeira execução
+
+### 3. Adicione Dados CSV (Opcional)
+
+Coloque os arquivos CSV do INMET em:
+```
+fastapi/app/data/raw/
 ```
 
-**Opção 3: Script Batch**
-```powershell
-.\executar_sql.bat sql_scripts/04_views_trendz.sql
-```
+---
 
-**❌ NÃO USE (não funciona no PowerShell):**
-```powershell
-docker exec -i postgres-inmet psql -U inmet_user -d inmet_db < sql_scripts/04_views_trendz.sql
-```
+## 💻 Uso
 
-### 3. Carregar Dados
+### Iniciar o Pipeline
 
+Após executar `start.ps1`, todos os serviços estarão disponíveis:
+
+| Serviço | URL | Credenciais |
+|---------|-----|------------|
+| **FastAPI** | http://localhost:8000/docs | - |
+| **Grafana** | http://localhost:3000 | `admin` / `admin` |
+| **JupyterLab** | http://localhost:1010 | Token: `avd2025` |
+| **MLFlow** | http://localhost:5000 | - |
+| **MinIO Console** | http://localhost:9001 | `minioadmin` / `minioadmin` |
+| **ThingsBoard** | http://localhost:9090 | `tenant@thingsboard.org` / `tenant` |
+
+### Fluxo de Trabalho Completo
+
+#### 1. Ingerir Dados
+
+**Opção A: Via ThingsBoard (Recomendado)**
 ```powershell
-# Popular ThingsBoard com dados
+# Popular ThingsBoard com dados históricos
 curl.exe -X POST http://localhost:8000/populate-thingsboard
 
 # Ingerir dados do ThingsBoard para S3 e PostgreSQL
 curl.exe -X POST http://localhost:8000/ingest-from-thingsboard
 ```
 
-### 4. Classificar Intensidade de Chuva (OBRIGATÓRIO)
-
-**⚠️ IMPORTANTE:** Antes de treinar o modelo, você precisa classificar a intensidade de chuva nos dados.
-
-1. Acesse JupyterLab: http://localhost:1010 (token: `avd2025`)
-2. Execute o notebook: `notebooks/02_tratamento_limpeza.ipynb`
-3. Isso vai classificar a intensidade de chuva nos dados
-
-### 5. Treinar Modelo ML (OBRIGATÓRIO)
-
-1. No JupyterLab, execute: `notebooks/03_modelagem_mlflow.ipynb`
-2. Isso vai treinar e salvar modelos no MLFlow
-
-### 6. Carregar Modelo ML
-
+**Opção B: Direto no Banco**
 ```powershell
-# Verificar modelos disponíveis
-curl.exe -X GET http://localhost:8000/models
-
-# Carregar melhor modelo
-curl.exe -X POST http://localhost:8000/models/load
+curl.exe -X POST http://localhost:8000/load-to-db
 ```
 
-**⚠️ Se retornar "Modelo não encontrado":**
-- Execute primeiro os notebooks 02 e 03 (veja `PASSO_A_PASSO_MODELO.md`)
+#### 2. Classificar Intensidade de Chuva
 
-### 5. Acessar Serviços
+**Via Jupyter Notebook:**
+1. Acesse: http://localhost:1010
+2. Execute: `notebooks/02_tratamento_limpeza.ipynb`
 
-- **FastAPI:** http://localhost:8000/docs
-- **MLFlow:** http://localhost:5000
-- **Trendz Analytics:** http://localhost:8888
-- **ThingsBoard:** http://localhost:9090
-- **JupyterLab:** http://localhost:1010 (token: `avd2025`)
-- **MinIO Console:** http://localhost:9001 (minioadmin/minioadmin)
+**Via SQL:**
+```powershell
+.\executar_sql.ps1 sql_scripts/03_update_intensidade_chuva.sql
+```
 
-## 🔧 Configuração do Trendz
+#### 3. Criar Views para Grafana
 
-### ⚠️ IMPORTANTE: Configuração Manual Necessária
+```powershell
+.\executar_sql.ps1 sql_scripts/04_views_grafana.sql
+```
 
-O Trendz Analytics **NÃO possui API pública** para criar datasources. Você precisa configurar **MANUALMENTE** através da interface web.
+#### 4. Treinar Modelos ML
 
-### 📋 Guia Completo de Configuração Manual
+1. Acesse JupyterLab: http://localhost:1010
+2. Execute: `notebooks/03_modelagem_mlflow.ipynb`
 
-Siga o guia passo a passo: [`trendz/COMO_CONFIGURAR_DATASOURCE.md`](trendz/COMO_CONFIGURAR_DATASOURCE.md)
+#### 5. Visualizar no Grafana
 
-### 🚀 Resumo Rápido:
+1. Acesse: http://localhost:3000
+2. Login: `admin` / `admin`
+3. Dashboard: **"Classificação de Intensidade de Chuva - INMET"**
 
-1. Acesse: http://localhost:8888
-2. Login: `tenant@thingsboard.org` / `tenant`
-3. Vá em **Settings** → **Data Sources** (ou procure no menu)
-4. Clique em **Add new data source**
-5. Preencha os **3 campos obrigatórios**:
-   - **URL***: `jdbc:postgresql://postgres:5432/inmet_db`
-     - (Use `jdbc:postgresql://localhost:5432/inmet_db` se acessando do host Windows)
-   - **Login***: `inmet_user`
-   - **Password***: `inmet_password`
-6. Clique em **Save** (botão no canto inferior direito)
+### Executar Notebooks
 
-### 📊 Queries SQL Prontas
+Execute os notebooks na seguinte ordem:
 
-Se não conseguir configurar datasource, use queries SQL direto nos widgets:
-[`trendz/QUERIES_SQL_PARA_WIDGETS.md`](trendz/QUERIES_SQL_PARA_WIDGETS.md)
+1. **01_eda_exploracao.ipynb** - Análise exploratória dos dados
+2. **02_tratamento_limpeza.ipynb** - Tratamento e classificação ⚠️ **OBRIGATÓRIO**
+3. **03_modelagem_mlflow.ipynb** - Treinamento de modelos ⚠️ **OBRIGATÓRIO**
+4. **05_visualizacoes_finais.ipynb** - Visualizações finais e análises
 
-**Resumo Rápido:**
+### Endpoints da API
 
-1. Acesse http://localhost:8888
-2. Login: `tenant@thingsboard.org` / `tenant`
-3. Configure datasource PostgreSQL:
-   - Host: `postgres` (ou `localhost` do host)
-   - Port: `5432`
-   - Database: `inmet_db`
-   - User: `inmet_user`
-   - Password: `inmet_password`
-4. Use as views SQL criadas para criar widgets
+#### Ingestão de Dados
+- `GET /` - Lista de endpoints disponíveis
+- `POST /populate-thingsboard` - Popula ThingsBoard com dados históricos
+- `POST /ingest-from-thingsboard` - Ingestão de dados do ThingsBoard
+- `POST /load-to-db` - Carrega CSVs diretamente no PostgreSQL
+- `GET /stats` - Estatísticas do banco de dados
 
-## 📊 Endpoints Principais
+#### Testes de Conexão
+- `GET /test-connection` - Testa conexão com MinIO/S3
+- `GET /test-db` - Testa conexão com PostgreSQL
+- `GET /test-thingsboard` - Testa conexão com ThingsBoard
 
-### FastAPI
-
-- `GET /` - Lista de endpoints
-- `POST /ingest-from-thingsboard` - Coleta dados do ThingsBoard
-- `POST /trendz/predict` - Predição otimizada para Trendz
-- `POST /trendz/predict-from-db` - Predições em lote
-- `POST /configure-trendz` - Configura datasource PostgreSQL automaticamente
-- `GET /models` - Lista modelos disponíveis
+#### Machine Learning
+- `GET /models` - Lista modelos disponíveis no MLFlow
 - `POST /models/load` - Carrega melhor modelo
+- `GET /models/info` - Informações do modelo carregado
+- `POST /predict` - Predição de intensidade de chuva
+- `POST /predict-from-db` - Predições em lote a partir do banco
 
-### Exemplo de Predição
+#### Exemplo de Predição
 
 ```powershell
-curl.exe -X POST http://localhost:8000/trendz/predict `
+curl.exe -X POST http://localhost:8000/predict `
   -H "Content-Type: application/json" `
-  -d '{\"codigo_wmo\": \"A307\", \"precipitacao_mm\": 5.2, \"pressao_estacao_mb\": 1013.5, \"temperatura_ar_c\": 25.3, \"umidade_rel_horaria_pct\": 75.0, \"vento_velocidade_ms\": 3.5}'
+  -d '{
+    "precipitacao_mm": 5.2,
+    "pressao_estacao_mb": 1013.5,
+    "temperatura_ar_c": 25.3,
+    "umidade_rel_horaria_pct": 75.0,
+    "vento_velocidade_ms": 3.5
+  }'
 ```
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+projeto-avd-intensidade-chuva/
+├── docker-compose.yml              # Orquestração dos serviços
+├── start.ps1 / start.sh            # Scripts de inicialização
+├── stop.ps1 / stop.sh              # Scripts para parar serviços
+├── executar_sql.ps1                # Script para executar SQL
+│
+├── fastapi/                        # API de ingestão de dados
+│   └── app/
+│       ├── Dockerfile
+│       ├── requirements.txt
+│       ├── services/               # Serviços principais
+│       │   ├── main.py            # Aplicação FastAPI
+│       │   ├── data_loader.py
+│       │   ├── csv_processor.py
+│       │   ├── s3_service.py
+│       │   ├── db_service.py
+│       │   ├── thingsboard_service.py
+│       │   └── mlflow_service.py
+│       ├── scripts/               # Scripts de inicialização
+│       │   ├── init_pipeline.py
+│       │   └── populate_thingsboard.py
+│       └── data/raw/              # Coloque arquivos CSV aqui
+│
+├── notebooks/                      # Análise e modelagem ML
+│   ├── 01_eda_exploracao.ipynb
+│   ├── 02_tratamento_limpeza.ipynb
+│   ├── 03_modelagem_mlflow.ipynb
+│   └── 05_visualizacoes_finais.ipynb
+│
+├── sql_scripts/                    # Scripts SQL
+│   ├── 00_init_databases.sql      # Cria banco ThingsBoard
+│   ├── 01_schema.sql              # Schema principal
+│   ├── 02_views.sql               # Views auxiliares
+│   ├── 03_update_intensidade_chuva.sql  # Classificação
+│   └── 04_views_grafana.sql       # Views para Grafana
+│
+├── grafana/                        # Configuração Grafana
+│   ├── provisioning/
+│   │   ├── datasources/          # PostgreSQL configurado
+│   │   │   └── postgres.yml
+│   │   └── dashboards/           # Dashboard provisionado
+│   │       ├── dashboard.yml
+│   │       └── intensidade-chuva.json
+│   └── queries_sql_completas.md   # 20 queries SQL prontas
+│
+├── jupyterlab/                     # Dockerfile JupyterLab
+│   └── Dockerfile
+│
+├── mlflow/                         # Dados do MLFlow (não versionado)
+│   └── .gitkeep
+│
+├── data/                           # Dados (não versionado)
+│   ├── postgres/                  # Dados PostgreSQL
+│   ├── minio/                     # Dados MinIO
+│   └── raw/                       # CSVs brutos
+│
+├── thingsboard/                    # Dados ThingsBoard (não versionado)
+│   └── .gitkeep
+│
+├── .gitignore                      # Arquivos ignorados pelo Git
+├── LICENSE                         # Licença do projeto
+└── README.md                       # Este arquivo
+```
+
+---
+
+## 🔧 Serviços
+
+### FastAPI (Porta 8000)
+API REST para ingestão de dados, consultas e predições.
+
+**Documentação:** http://localhost:8000/docs
+
+### Grafana (Porta 3000)
+Dashboards interativos para visualização de dados.
+
+**Login:** `admin` / `admin`
+
+**Dashboard Provisionado:** "Classificação de Intensidade de Chuva - INMET"
+
+### JupyterLab (Porta 1010)
+Ambiente de análise e modelagem com notebooks.
+
+**Token:** `avd2025`
+
+### MLFlow (Porta 5000)
+Tracking de experimentos e versionamento de modelos ML.
+
+### PostgreSQL (Porta 5432)
+Banco de dados relacional para dados estruturados.
+
+**Credenciais:** `inmet_user` / `inmet_password`
+
+### MinIO (Portas 9000/9001)
+Armazenamento de objetos compatível com S3.
+
+**Console:** http://localhost:9001  
+**Credenciais:** `minioadmin` / `minioadmin`
+
+### ThingsBoard (Porta 9090)
+Plataforma IoT para simulação de dispositivos.
+
+**Login:** `tenant@thingsboard.org` / `tenant`
+
+---
 
 ## 📚 Documentação
 
-- [`trendz/GUIA_COMPLETO.md`](trendz/GUIA_COMPLETO.md) - Guia completo do Trendz
-- [`RESOLUCAO_TRENDZ.md`](RESOLUCAO_TRENDZ.md) - Resolução da integração Trendz
-- [`COMANDOS_POWERSHELL.md`](COMANDOS_POWERSHELL.md) - Comandos PowerShell
-- [`ANALISE_E_PLANO.md`](ANALISE_E_PLANO.md) - Análise e plano do projeto
+### Documentação Adicional
 
-## 🐳 Serviços Docker
+- **Queries SQL para Grafana:** [`grafana/queries_sql_completas.md`](grafana/queries_sql_completas.md)
+  - 20 queries SQL prontas para uso
+  - Visualizações interativas
+  - Exemplos de configuração
 
-| Serviço | Porta | Descrição |
-|---------|-------|-----------|
-| FastAPI | 8000 | API de ingestão |
-| PostgreSQL | 5432 | Banco de dados |
-| MinIO | 9000/9001 | Armazenamento S3 |
-| MLFlow | 5000 | Tracking de ML |
-| Trendz | 8888 | Dashboards |
-| ThingsBoard | 9090 | Plataforma IoT |
-| JupyterLab | 1010 | Notebooks |
+### Estrutura do Banco de Dados
 
-## 🔑 Credenciais Padrão
+#### Tabelas Principais
 
-- **PostgreSQL:** `inmet_user` / `inmet_password`
-- **MinIO:** `minioadmin` / `minioadmin`
-- **ThingsBoard/Trendz:** `tenant@thingsboard.org` / `tenant`
-- **JupyterLab:** Token: `avd2025`
+- **`estacoes`**: Metadados das estações meteorológicas
+- **`dados_meteorologicos`**: Dados meteorológicos horários
+  - Inclui coluna `intensidade_chuva` (sem_chuva, leve, moderada, forte)
+
+#### Views para Grafana
+
+Execute `sql_scripts/04_views_grafana.sql` para criar as views:
+
+- `vw_grafico_barras_intensidade` - Gráfico de barras por classe
+- `vw_temporal_diaria_intensidade` - Linha temporal diária
+- `vw_estatisticas_por_estacao` - Estatísticas por estação
+- `vw_distribuicao_intensidade_estacao` - Distribuição por estação
+- `vw_resumo_geral` - Resumo geral (cards/métricas)
+- E mais...
+
+---
+
+## 🛠️ Comandos Úteis
+
+```powershell
+# Ver logs de todos os serviços
+docker compose logs -f
+
+# Ver logs de um serviço específico
+docker compose logs -f fastapi
+
+# Parar todos os serviços
+.\stop.ps1
+
+# Reiniciar serviços
+docker compose restart
+
+# Verificar status dos containers
+docker compose ps
+
+# Executar SQL
+.\executar_sql.ps1 sql_scripts/04_views_grafana.sql
+
+# Acessar shell do container
+docker exec -it fastapi-ingestao bash
+```
+
+---
+
+## 🆘 Troubleshooting
+
+### Docker não está rodando
+- Inicie o Docker Desktop
+- Aguarde até que esteja totalmente iniciado
+- Verifique: `docker info`
+
+### Erro ao iniciar containers
+- Verifique se as portas estão livres:
+  - 8000 (FastAPI)
+  - 3000 (Grafana)
+  - 5000 (MLFlow)
+  - 9090 (ThingsBoard)
+  - 1010 (JupyterLab)
+  - 5432 (PostgreSQL)
+- Execute: `docker compose down` e depois `.\start.ps1`
+
+### FastAPI não responde
+- Aguarde alguns minutos após iniciar
+- Verifique logs: `docker compose logs fastapi`
+- Verifique se o container está rodando: `docker compose ps`
+
+### Sem dados no Grafana
+1. Verifique se os dados foram carregados:
+   ```powershell
+   curl.exe http://localhost:8000/stats
+   ```
+2. Execute a classificação de intensidade:
+   ```powershell
+   .\executar_sql.ps1 sql_scripts/03_update_intensidade_chuva.sql
+   ```
+3. Execute as views SQL:
+   ```powershell
+   .\executar_sql.ps1 sql_scripts/04_views_grafana.sql
+   ```
+
+### Modelo não encontrado
+- Execute o notebook `03_modelagem_mlflow.ipynb` primeiro
+- Verifique se o MLFlow está rodando: http://localhost:5000
+- Carregue o modelo: `POST http://localhost:8000/models/load`
+
+### Erro ao executar SQL no PowerShell
+**Erro:** `Operador '<' reservado para uso futuro`
+
+**Solução:** Use o script fornecido:
+```powershell
+.\executar_sql.ps1 sql_scripts/04_views_grafana.sql
+```
+
+### Grafana não conecta ao PostgreSQL
+- Verifique se o PostgreSQL está rodando: `docker compose ps postgres`
+- Verifique se o datasource está configurado: http://localhost:3000/connections/datasources
+- O datasource "PostgreSQL INMET" deve estar configurado automaticamente
+
+---
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Para contribuir:
+
+1. Faça um Fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+---
 
 ## 📝 Notas Importantes
 
-1. **PowerShell:** Use `Get-Content` ou os scripts fornecidos para executar SQL
-2. **Modelo ML:** Carregue o modelo antes de fazer predições (`/models/load`)
-3. **Trendz:** Configure o datasource PostgreSQL antes de criar dashboards
-4. **Dados:** Execute `/populate-thingsboard` antes de `/ingest-from-thingsboard`
+- ⚠️ **Dados não são versionados**: Arquivos CSV e dados processados não são commitados (veja `.gitignore`)
+- 📁 **Adicione seus CSVs**: Coloque arquivos CSV do INMET em `fastapi/app/data/raw/`
+- 🎨 **Dashboard automático**: O Grafana já vem com dashboard provisionado
+- 🔄 **Primeira execução**: Pode demorar mais tempo para baixar imagens Docker
 
-## 🛠️ Troubleshooting
+---
 
-### Erro ao executar SQL no PowerShell
+## 📄 Licença
 
-**Erro:** `Operador '<' reservado para uso futuro`
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-**Solução:** Use um dos comandos corretos listados acima (Opções 1, 2 ou 3)
+---
 
-### Trendz não conecta ao ThingsBoard
+## 👥 Autores
 
-Verifique se o ThingsBoard está rodando:
-```powershell
-docker ps | Select-String thingsboard
-```
+**Disciplina:** Análise e Visualização de Dados - 2025.2  
+**Instituição:** CESAR School  
+**Projeto:** Classificação de Intensidade de Precipitação (Problema 7.8)
 
-### Modelo não encontrado
+---
 
-Execute o notebook `03_modelagem_mlflow.ipynb` para treinar e salvar o modelo.
+## 🙏 Agradecimentos
 
-## 📧 Contato
+- INMET (Instituto Nacional de Meteorologia) pelos dados meteorológicos
+- Comunidade open-source pelas ferramentas utilizadas
 
-Projeto desenvolvido para a disciplina **Análise e Visualização de Dados - 2025.2**  
-**CESAR School**
+---
+
+## 📞 Suporte
+
+Para dúvidas ou problemas:
+
+1. Verifique a seção [Troubleshooting](#-troubleshooting)
+2. Consulte a documentação adicional
+3. Abra uma issue no repositório
+
+---
+
+**Desenvolvido com ❤️ para análise de dados meteorológicos**
+
+---
+
+<div align="center">
+
+**⭐ Se este projeto foi útil, considere dar uma estrela! ⭐**
+
+</div>

@@ -2,7 +2,7 @@
 # Uso: .\executar_sql.ps1 [arquivo.sql]
 
 param(
-    [string]$arquivo = "sql_scripts/04_views_trendz.sql",
+    [string]$arquivo = "sql_scripts/04_views_grafana.sql",
     [string]$container = "postgres-inmet",
     [string]$usuario = "inmet_user",
     [string]$database = "inmet_db"

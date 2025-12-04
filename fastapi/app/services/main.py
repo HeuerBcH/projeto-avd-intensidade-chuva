@@ -49,9 +49,8 @@ def home():
             "models_info": "/models/info",
             "predict": "/predict",
             "predict_batch": "/predict/batch",
-            "trendz_predict": "/trendz/predict (endpoint otimizado para Trendz)",
-            "trendz_predict_from_db": "/trendz/predict-from-db (predições em lote a partir do banco)",
-            "configure_trendz": "/configure-trendz (configura datasource PostgreSQL automaticamente)"
+            "predict_simple": "/predict (predição simplificada)",
+            "predict_from_db": "/predict-from-db (predições em lote a partir do banco)"
         }
     }
 
@@ -741,47 +740,6 @@ def get_model_information():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/predict")
-def make_prediction(request: PredictionRequest):
-    """
-    Faz uma predição de intensidade de chuva usando o modelo carregado.
-    
-    Recebe dados meteorológicos e retorna a predição de intensidade de chuva.
-    """
-    try:
-        # Converte request para dict
-        data = request.dict()
-        
-        # Preenche valores None com 0
-        for key, value in data.items():
-            if value is None:
-                data[key] = 0.0
-        
-        # Extrai data/hora se disponível para calcular features temporais
-        if data.get('ano') is None or data.get('mes') is None:
-            from datetime import datetime
-            now = datetime.now()
-            if data.get('ano') is None:
-                data['ano'] = now.year
-            if data.get('mes') is None:
-                data['mes'] = now.month
-            if data.get('dia') is None:
-                data['dia'] = now.day
-            if data.get('hora') is None:
-                data['hora'] = now.hour
-            if data.get('dia_semana') is None:
-                data['dia_semana'] = now.weekday()
-        
-        result = predict(data)
-        return {
-            "status": "success",
-            "prediction": result
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.post("/predict/batch")
 def make_batch_predictions(requests: List[PredictionRequest]):
     """
@@ -809,11 +767,11 @@ def make_batch_predictions(requests: List[PredictionRequest]):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================================
-# ENDPOINTS OTIMIZADOS PARA TRENDZ
+# ENDPOINT DE PREDIÇÃO PRINCIPAL (SIMPLIFICADO)
 # ============================================================================
 
-class TrendzPredictionRequest(BaseModel):
-    """Modelo simplificado para Trendz - aceita dados flexíveis"""
+class SimplePredictionRequest(BaseModel):
+    """Modelo simplificado para predições - aceita dados flexíveis"""
     codigo_wmo: Optional[str] = None
     precipitacao_mm: float
     pressao_estacao_mb: float
@@ -831,10 +789,10 @@ class TrendzPredictionRequest(BaseModel):
     vento_rajada_max_ms: Optional[float] = None
     radiacao_global_kjm2: Optional[float] = None
 
-@app.post("/trendz/predict")
-def trendz_predict(request: TrendzPredictionRequest):
+@app.post("/predict")
+def simple_predict(request: SimplePredictionRequest):
     """
-    Endpoint otimizado para Trendz Analytics.
+    Endpoint simplificado para predições.
     
     Faz predição e salva automaticamente no banco de dados para visualização.
     Aceita dados em formato flexível e retorna predição de intensidade de chuva.
@@ -904,7 +862,7 @@ def trendz_predict(request: TrendzPredictionRequest):
             # Não falha a requisição se não conseguir salvar
             print(f"⚠️  Aviso: Não foi possível salvar predição no banco: {save_error}")
         
-        # Retorna formato simplificado para Trendz
+        # Retorna formato simplificado
         return {
             "status": "success",
             "intensidade_chuva": result.get("prediction", "unknown"),
@@ -918,11 +876,11 @@ def trendz_predict(request: TrendzPredictionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao fazer predição: {str(e)}")
 
-@app.post("/trendz/predict-from-db")
-def trendz_predict_from_db(limit: int = 10):
+@app.post("/predict-from-db")
+def predict_from_db(limit: int = 10):
     """
     Busca dados recentes do banco e faz predições para todos.
-    Útil para popular o dashboard do Trendz com predições em lote.
+    Útil para popular dashboards com predições em lote.
     """
     try:
         # Busca dados recentes
@@ -1008,51 +966,3 @@ def trendz_predict_from_db(limit: int = 10):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/configure-trendz")
-def configure_trendz():
-    """
-    Configura automaticamente o datasource PostgreSQL no Trendz Analytics.
-    
-    Este endpoint executa o script de configuração que:
-    1. Aguarda Trendz e ThingsBoard estarem prontos
-    2. Autentica no ThingsBoard
-    3. Cria datasource PostgreSQL no Trendz
-    4. Testa conexão com PostgreSQL
-    """
-    try:
-        script_path = Path(__file__).parent.parent / "scripts" / "configure_trendz_datasource.py"
-        
-        if not script_path.exists():
-            raise HTTPException(
-                status_code=404,
-                detail=f"Script de configuração não encontrado: {script_path}"
-            )
-        
-        # Executa o script Python
-        result = subprocess.run(
-            [sys.executable, str(script_path)],
-            capture_output=True,
-            text=True,
-            timeout=300  # 5 minutos
-        )
-        
-        if result.returncode == 0:
-            return {
-                "status": "success",
-                "message": "Trendz configurado com sucesso!",
-                "output": result.stdout
-            }
-        else:
-            return {
-                "status": "error",
-                "message": "Erro ao configurar Trendz",
-                "error": result.stderr,
-                "output": result.stdout
-            }
-    except subprocess.TimeoutExpired:
-        raise HTTPException(
-            status_code=504,
-            detail="Timeout ao configurar Trendz. Tente novamente ou configure manualmente."
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

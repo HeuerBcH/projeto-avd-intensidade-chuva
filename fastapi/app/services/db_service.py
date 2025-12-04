@@ -252,7 +252,7 @@ def insert_predicao_intensidade(
         conn.rollback()
         # Se a tabela não existir, tenta criar
         if "does not exist" in str(e).lower() or "relation" in str(e).lower():
-            print("⚠️  Tabela predicoes_intensidade não existe. Execute o script 04_views_trendz.sql")
+            print("⚠️  Tabela predicoes_intensidade não existe. Execute o script 04_views_grafana.sql")
         raise RuntimeError(f"Erro ao inserir predição: {e}")
     finally:
         cur.close()

@@ -16,7 +16,6 @@ build/
 .env
 .env.local
 *.env
-!.env.example
 
 # IDE
 .vscode/
@@ -26,30 +25,45 @@ build/
 *~
 
 # Jupyter Notebook
-.ipynb_checkpoints
+.ipynb_checkpoints/
 *.ipynb_checkpoints/
 
 # Data directories (não versionar dados)
-data/*
-!data/.gitkeep
-data/minio/
 data/postgres/
-data/raw/
-data/processed/
+data/minio/
+data/raw/*.csv
+data/raw/*.CSV
+!data/raw/.gitkeep
+!data/.gitkeep
 
 # MLFlow
-mlflow/*
-!mlflow/.gitkeep
 mlflow/artifacts/
-mlflow/mlflow.db
 mlflow/*.db
+!mlflow/.gitkeep
 
 # Logs
 *.log
 logs/
+thingsboard/logs/
+thingsboard/data/
 
-# Docker
-.dockerignore
+# Docker volumes
+data/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ThingsBoard
+thingsboard/data/
+thingsboard/logs/
+!thingsboard/.gitkeep
+
+# Grafana data (exceto provisioning)
+grafana/data/
+!grafana/provisioning/
+!grafana/provisioning/**/*
 
 # OS
 .DS_Store
@@ -62,33 +76,15 @@ desktop.ini
 *.bak
 *.swp
 
-# CSV files (dados brutos não devem ser versionados)
-*.CSV
-*.csv
-!fastapi/app/data/raw/.gitkeep
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# ThingsBoard
-thingsboard/*
-!thingsboard/.gitkeep
-thingsboard/data/
-thingsboard/logs/
-
-# Trendz
-trendz/*
-!trendz/.gitkeep
-trendz/data/
-trendz/logs/
-
-# MinIO data
-data/minio/
-
-# Keep only .gitkeep files in empty directories
-!**/.gitkeep
-
 # OneDrive sync files
 ~$*
+
+# Imagens geradas pelos notebooks
+notebooks/*.png
+notebooks/*.jpg
+notebooks/*.jpeg
+notebooks/projeto-avd-intensidade-chuva/
+
+# Reports (manter apenas templates)
+reports/*.pdf
+reports/*.docx

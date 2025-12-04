@@ -3,7 +3,7 @@ REM Script batch para executar SQL no PostgreSQL via Docker
 REM Uso: executar_sql.bat [arquivo.sql]
 
 set ARQUIVO=%~1
-if "%ARQUIVO%"=="" set ARQUIVO=sql_scripts/04_views_trendz.sql
+if "%ARQUIVO%"=="" set ARQUIVO=sql_scripts/04_views_grafana.sql
 
 echo ========================================
 echo   Executando Script SQL
