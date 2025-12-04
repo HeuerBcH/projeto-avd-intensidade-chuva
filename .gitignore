@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# Data directories (não versionar dados)
+data/postgres/
+data/minio/
+data/raw/*.csv
+data/raw/*.CSV
+!data/raw/.gitkeep
+!data/.gitkeep
+
+# MLFlow
+mlflow/artifacts/
+mlflow/*.db
+!mlflow/.gitkeep
+
+# Logs
+*.log
+logs/
+thingsboard/logs/
+thingsboard/data/
+
+# Docker volumes
+data/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ThingsBoard
+thingsboard/data/
+thingsboard/logs/
+!thingsboard/.gitkeep
+
+# Grafana data (exceto provisioning)
+grafana/data/
+!grafana/provisioning/
+!grafana/provisioning/**/*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# OneDrive sync files
+~$*
+
+# Imagens geradas pelos notebooks
+notebooks/*.png
+notebooks/*.jpg
+notebooks/*.jpeg
+notebooks/projeto-avd-intensidade-chuva/
+
+# Reports (manter apenas templates)
+reports/*.pdf
+reports/*.docx

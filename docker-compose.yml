@@ -1,0 +1,166 @@
+services:
+
+  # FASTAPI - Coleta e ingestão de dados do INMET
+  fastapi:
+    build: ./fastapi/app
+    container_name: fastapi-ingestao
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./fastapi/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      thingsboard:
+        condition: service_started
+    volumes:
+      - ./fastapi/app:/app
+    networks:
+      - avd-network
+
+  # POSTGRESQL - Banco de dados estruturado
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-inmet
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: inmet_db
+      POSTGRES_USER: inmet_user
+      POSTGRES_PASSWORD: inmet_password
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./sql_scripts:/docker-entrypoint-initdb.d
+    networks:
+      - avd-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inmet_user -d inmet_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MINIO - Armazenamento S3 local
+  minio:
+    image: minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - avd-network
+
+  # JUPYTERLAB - Análise e modelagem (notebooks)
+  jupyterlab:
+    image: jupyter/base-notebook:python-3.10
+    container_name: jupyterlab
+    ports:
+      - "1010:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    environment:
+      JUPYTER_TOKEN: avd2025
+    networks:
+      - avd-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      mlflow:
+        condition: service_started
+
+  # MLFLOW - Registro e versionamento de modelos
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.14.1
+    container_name: mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_TRACKING_URI: http://0.0.0.0:5000
+      # Configuração S3 (MinIO) para artifact store
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      # Força uso de path-style (necessário para MinIO)
+      AWS_S3_FORCE_PATH_STYLE: "true"
+    volumes:
+      - ./mlflow:/mlflow
+    command: mlflow server --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root s3://mlflow-artifacts --host 0.0.0.0
+    depends_on:
+      - minio
+    networks:
+      - avd-network
+
+  # THINGSBOARD - Plataforma IoT (opcional)
+  thingsboard:
+    image: thingsboard/tb:latest
+    container_name: thingsboard
+    ports:
+      - "9090:9090"
+      - "1883:1883"
+      - "5683:5683/udp"
+    environment:
+      # Configuração do PostgreSQL
+      - TB_DATABASE_ENTITIES_TYPE=sql
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/thingsboard
+      - SPRING_DATASOURCE_USERNAME=inmet_user
+      - SPRING_DATASOURCE_PASSWORD=inmet_password
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      # Configurações JVM
+      - JAVA_OPTS=-Xms256m -Xmx1024m
+      # Configurações adicionais
+      - TB_QUEUE_TYPE=in-memory
+      # Força uso do PostgreSQL (não HSQL)
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      # Permite criação automática do schema
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    volumes:
+      - ./thingsboard/data:/data
+      - ./thingsboard/logs:/var/log/thingsboard
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - avd-network
+    restart: unless-stopped
+
+  # GRAFANA - Dashboard de visualização
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=volkovlabs-echarts-panel
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - avd-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  avd-network:
+    driver: bridge

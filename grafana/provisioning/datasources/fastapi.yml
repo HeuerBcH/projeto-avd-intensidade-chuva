@@ -1,0 +1,18 @@
+apiVersion: 1
+
+datasources:
+  - name: FastAPI ML Predictions
+    uid: fastapi-ml
+    type: grafana-http-backend-datasource
+    access: proxy
+    url: http://fastapi:8000
+    isDefault: false
+    editable: true
+    jsonData:
+      httpMethod: POST
+      defaultQuery: |
+        {
+          "query": "predict",
+          "variables": {}
+        }
+
