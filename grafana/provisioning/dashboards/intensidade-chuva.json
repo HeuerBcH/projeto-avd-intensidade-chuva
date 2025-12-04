@@ -5,21 +5,21 @@
   "tags": ["inmet", "chuva", "meteorologia"],
   "timezone": "browser",
   "schemaVersion": 38,
-  "version": 1,
+  "version": 2,
   "refresh": "30s",
   "panels": [
       {
         "id": 1,
-        "title": "Resumo Geral",
+      "title": "📊 Total de Registros",
         "type": "stat",
-        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
         "targets": [
           {
             "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
             "editorMode": "code",
             "format": "table",
             "rawQuery": true,
-            "rawSql": "SELECT total_registros FROM vw_resumo_geral;",
+          "rawSql": "SELECT COALESCE(total_registros, 0) as total_registros FROM vw_resumo_geral;",
             "refId": "A"
           }
         ],
@@ -30,38 +30,41 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "green", "value": null}
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 1000},
+              {"color": "yellow", "value": 100000}
               ]
             },
             "unit": "short",
-            "displayName": "Total de Registros"
+          "displayName": "Registros"
           }
         },
         "options": {
           "colorMode": "value",
           "graphMode": "area",
-          "justifyMode": "auto",
+        "justifyMode": "center",
           "orientation": "auto",
           "reduceOptions": {
             "values": false,
             "calcs": ["lastNotNull"],
             "fields": ""
           },
-          "textMode": "auto"
+        "textMode": "value_and_name",
+        "textSize": {}
         }
       },
       {
         "id": 2,
-        "title": "Total de Estações",
+      "title": "🏢 Total de Estações",
         "type": "stat",
-        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
         "targets": [
           {
             "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
             "editorMode": "code",
             "format": "table",
             "rawQuery": true,
-            "rawSql": "SELECT total_estacoes FROM vw_resumo_geral;",
+          "rawSql": "SELECT COALESCE(total_estacoes, 0) as total_estacoes FROM vw_resumo_geral;",
             "refId": "A"
           }
         ],
@@ -72,7 +75,9 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "blue", "value": null}
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 5},
+              {"color": "yellow", "value": 10}
               ]
             },
             "unit": "short",
@@ -82,28 +87,29 @@
         "options": {
           "colorMode": "value",
           "graphMode": "area",
-          "justifyMode": "auto",
+        "justifyMode": "center",
           "orientation": "auto",
           "reduceOptions": {
             "values": false,
             "calcs": ["lastNotNull"],
             "fields": ""
           },
-          "textMode": "auto"
+        "textMode": "value_and_name",
+        "textSize": {}
         }
       },
       {
         "id": 3,
-        "title": "Registros Classificados",
+      "title": "✅ Registros Classificados",
         "type": "stat",
-        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
         "targets": [
           {
             "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
             "editorMode": "code",
             "format": "table",
             "rawQuery": true,
-            "rawSql": "SELECT registros_classificados FROM vw_resumo_geral;",
+          "rawSql": "SELECT COALESCE(registros_classificados, 0) as registros_classificados FROM vw_resumo_geral;",
             "refId": "A"
           }
         ],
@@ -124,28 +130,29 @@
         "options": {
           "colorMode": "value",
           "graphMode": "area",
-          "justifyMode": "auto",
+        "justifyMode": "center",
           "orientation": "auto",
           "reduceOptions": {
             "values": false,
             "calcs": ["lastNotNull"],
             "fields": ""
           },
-          "textMode": "auto"
+        "textMode": "value_and_name",
+        "textSize": {}
         }
       },
       {
         "id": 4,
-        "title": "Precipitação Média",
+      "title": "🌧️ Precipitação Média",
         "type": "stat",
-        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
         "targets": [
           {
             "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
             "editorMode": "code",
             "format": "table",
             "rawQuery": true,
-            "rawSql": "SELECT ROUND(precip_media_geral, 2) as value FROM vw_resumo_geral;",
+          "rawSql": "SELECT COALESCE(ROUND(precip_media_geral, 2), 0) as value FROM vw_resumo_geral;",
             "refId": "A"
           }
         ],
@@ -156,46 +163,49 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"color": "green", "value": null}
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 1},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 10}
               ]
             },
             "unit": "mm",
-            "displayName": "Precipitação Média"
+          "displayName": "Precipitação"
           }
         },
         "options": {
           "colorMode": "value",
           "graphMode": "area",
-          "justifyMode": "auto",
+        "justifyMode": "center",
           "orientation": "auto",
           "reduceOptions": {
             "values": false,
             "calcs": ["lastNotNull"],
             "fields": ""
           },
-          "textMode": "auto"
+        "textMode": "value_and_name",
+        "textSize": {}
         }
       },
       {
         "id": 5,
-        "title": "Distribuição de Intensidade de Chuva",
+      "title": "📊 Distribuição de Intensidade de Chuva",
         "type": "barchart",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 5},
         "targets": [
           {
             "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
             "editorMode": "code",
             "format": "table",
             "rawQuery": true,
-            "rawSql": "SELECT intensidade_chuva, total_registros FROM vw_grafico_barras_intensidade ORDER BY CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+          "rawSql": "SELECT intensidade_chuva, COALESCE(total_registros, 0) as total_registros FROM vw_grafico_barras_intensidade WHERE intensidade_chuva IS NOT NULL ORDER BY CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
             "refId": "A"
           }
         ],
         "fieldConfig": {
           "defaults": {
             "color": {
-              "mode": "palette-classic",
-              "fixedColor": "green"
+            "mode": "palette-classic"
             },
             "custom": {
               "hideFrom": {"tooltip": false, "viz": false, "legend": false}
@@ -213,7 +223,32 @@
             ],
             "unit": "short"
           },
-          "overrides": []
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "sem_chuva"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#5794F2", "mode": "fixed"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "leve"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#56A64B", "mode": "fixed"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "moderada"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#FADE2A", "mode": "fixed"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "forte"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#E24D42", "mode": "fixed"}}
+            ]
+          }
+        ]
         },
         "options": {
           "legend": {
@@ -224,7 +259,7 @@
           "tooltip": {
             "mode": "single"
           },
-          "barRadius": 0,
+        "barRadius": 0.5,
           "barWidth": 0.97,
           "groupWidth": 0.7,
           "orientation": "auto",
@@ -235,16 +270,16 @@
       },
       {
         "id": 6,
-        "title": "Série Temporal de Precipitação",
+      "title": "📈 Série Temporal de Precipitação",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 5},
         "targets": [
           {
             "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "SELECT timestamp_utc as time, precipitacao_mm as value FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL ORDER BY timestamp_utc;",
+          "rawSql": "SELECT timestamp_utc as time, COALESCE(precipitacao_mm, 0) as value FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL ORDER BY timestamp_utc LIMIT 10000;",
             "refId": "A"
           }
         ],
@@ -253,18 +288,18 @@
             "color": {"mode": "palette-classic"},
             "custom": {
               "drawStyle": "line",
-              "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
               "barAlignment": 0,
-              "lineWidth": 1,
-              "fillOpacity": 10,
-              "gradientMode": "none",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
               "spanNulls": false,
               "insertNulls": false,
-              "showPoints": "auto",
+            "showPoints": "never",
               "pointSize": 5,
               "stacking": {"group": "A", "mode": "none"},
               "axisPlacement": "auto",
-              "axisLabel": "",
+            "axisLabel": "Precipitação (mm)",
               "axisColorMode": "text",
               "scaleDistribution": {"type": "linear"},
               "axisCenteredZero": false,
@@ -287,23 +322,80 @@
             "placement": "bottom",
             "showLegend": true
           },
-          "tooltip": {
-            "mode": "single"
-          }
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
         }
+      }
+    },
+    {
+      "id": 9,
+      "title": "🥧 Distribuição Percentual de Intensidade",
+      "type": "piechart",
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 14},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT intensidade_chuva, COALESCE(percentual, 0) as percentual FROM vw_grafico_barras_intensidade WHERE intensidade_chuva IS NOT NULL ORDER BY CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false}
+          },
+          "mappings": [
+            {
+              "options": {
+                "sem_chuva": {"text": "Sem Chuva", "color": "#5794F2"},
+                "leve": {"text": "Leve", "color": "#56A64B"},
+                "moderada": {"text": "Moderada", "color": "#FADE2A"},
+                "forte": {"text": "Forte", "color": "#E24D42"}
+              },
+              "type": "value"
+            }
+          ],
+          "unit": "percent"
+        },
+        "overrides": []
       },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "pieType": "pie",
+        "tooltip": {
+          "mode": "single"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["value", "percent"]
+        }
+      }
+    },
       {
-        "id": 7,
-        "title": "Linha Temporal por Intensidade",
+      "id": 10,
+      "title": "🌡️ Série Temporal de Temperatura",
         "type": "timeseries",
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 12},
+      "gridPos": {"h": 8, "w": 16, "x": 8, "y": 14},
         "targets": [
           {
             "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
             "editorMode": "code",
             "format": "time_series",
             "rawQuery": true,
-            "rawSql": "SELECT data as time, precip_media_dia as value, intensidade_chuva FROM vw_temporal_diaria_intensidade WHERE $__timeFilter(data) ORDER BY data, intensidade_chuva;",
+          "rawSql": "SELECT timestamp_utc as time, COALESCE(temperatura_ar_c, 0) as temperatura FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL ORDER BY timestamp_utc LIMIT 10000;",
             "refId": "A"
           }
         ],
@@ -312,18 +404,252 @@
             "color": {"mode": "palette-classic"},
             "custom": {
               "drawStyle": "line",
-              "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
               "barAlignment": 0,
               "lineWidth": 2,
-              "fillOpacity": 20,
-              "gradientMode": "none",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
               "spanNulls": false,
               "insertNulls": false,
               "showPoints": "never",
               "pointSize": 5,
               "stacking": {"group": "A", "mode": "none"},
               "axisPlacement": "auto",
-              "axisLabel": "",
+            "axisLabel": "Temperatura (°C)",
+            "axisColorMode": "text",
+            "scaleDistribution": {"type": "linear"},
+            "axisCenteredZero": false,
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+            "thresholdsStyle": {"mode": "line"}
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 20},
+              {"color": "yellow", "value": 30},
+              {"color": "red", "value": 35}
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "💧 Série Temporal de Umidade",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT timestamp_utc as time, COALESCE(umidade_rel_horaria_pct, 0) as umidade FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL ORDER BY timestamp_utc LIMIT 10000;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {"group": "A", "mode": "none"},
+            "axisPlacement": "auto",
+            "axisLabel": "Umidade (%)",
+            "axisColorMode": "text",
+            "scaleDistribution": {"type": "linear"},
+            "axisCenteredZero": false,
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+            "thresholdsStyle": {"mode": "line"}
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 40},
+              {"color": "green", "value": 60},
+              {"color": "blue", "value": 80}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "🌪️ Velocidade do Vento",
+      "type": "timeseries",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT timestamp_utc as time, COALESCE(vento_velocidade_ms, 0) as vento FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL ORDER BY timestamp_utc LIMIT 10000;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {"group": "A", "mode": "none"},
+            "axisPlacement": "auto",
+            "axisLabel": "Vento (m/s)",
+            "axisColorMode": "text",
+            "scaleDistribution": {"type": "linear"},
+            "axisCenteredZero": false,
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+            "thresholdsStyle": {"mode": "line"}
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 5},
+              {"color": "orange", "value": 10},
+              {"color": "red", "value": 15}
+            ]
+          },
+          "unit": "velocityms"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "📊 Top 10 Estações com Mais Precipitação",
+      "type": "barchart",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 30},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT nome_estacao, COALESCE(ROUND(precip_total, 2), 0) as precip_total FROM vw_estatisticas_por_estacao WHERE nome_estacao IS NOT NULL ORDER BY precip_total DESC LIMIT 10;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false}
+          },
+          "mappings": [],
+          "unit": "mm"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "barRadius": 0.5,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "orientation": "horizontal",
+        "stacking": "none",
+        "xTickLabelRotation": -45,
+        "xTickLabelSpacing": 0
+      }
+    },
+    {
+      "id": 14,
+      "title": "📅 Agregação Mensal de Precipitação",
+      "type": "timeseries",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 30},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT mes as time, COALESCE(precip_total_mes, 0) as precip_total, intensidade_chuva FROM vw_agregacao_mensal_intensidade WHERE $__timeFilter(mes) AND intensidade_chuva IS NOT NULL ORDER BY mes, CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "bars",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {"group": "A", "mode": "normal"},
+            "axisPlacement": "auto",
+            "axisLabel": "Precipitação (mm)",
               "axisColorMode": "text",
               "scaleDistribution": {"type": "linear"},
               "axisCenteredZero": false,
@@ -343,29 +669,39 @@
             {
               "matcher": {"id": "byName", "options": "sem_chuva"},
               "properties": [
-                {"id": "color", "value": {"fixedColor": "blue", "mode": "fixed"}}
+              {"id": "color", "value": {"fixedColor": "#5794F2", "mode": "fixed"}}
               ]
             },
             {
               "matcher": {"id": "byName", "options": "leve"},
               "properties": [
-                {"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}
+              {"id": "color", "value": {"fixedColor": "#56A64B", "mode": "fixed"}}
               ]
             },
             {
               "matcher": {"id": "byName", "options": "moderada"},
               "properties": [
-                {"id": "color", "value": {"fixedColor": "yellow", "mode": "fixed"}}
+              {"id": "color", "value": {"fixedColor": "#FADE2A", "mode": "fixed"}}
               ]
             },
             {
               "matcher": {"id": "byName", "options": "forte"},
               "properties": [
-                {"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}
+              {"id": "color", "value": {"fixedColor": "#E24D42", "mode": "fixed"}}
               ]
             }
           ]
         },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
         "transformations": [
           {
             "id": "groupBy",
@@ -376,14 +712,90 @@
                   "operation": "groupby",
                   "as": "intensidade_chuva"
                 },
-                "value": {
-                  "aggregations": ["mean"],
+              "precip_total": {
+                "aggregations": ["sum"],
                   "operation": "aggregate"
                 }
               }
             }
           }
-        ],
+      ]
+    },
+    {
+      "id": 15,
+      "title": "🌡️ Temperatura e Precipitação (Dual Axis)",
+      "type": "timeseries",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 39},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT timestamp_utc as time, COALESCE(temperatura_ar_c, 0) as temperatura FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL AND temperatura_ar_c IS NOT NULL ORDER BY timestamp_utc LIMIT 5000;",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT timestamp_utc as time, COALESCE(precipitacao_mm, 0) as precipitacao FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL AND precipitacao_mm IS NOT NULL ORDER BY timestamp_utc LIMIT 5000;",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {"group": "A", "mode": "none"},
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {"type": "linear"},
+            "axisCenteredZero": false,
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "temperatura"},
+            "properties": [
+              {"id": "unit", "value": "celsius"},
+              {"id": "custom.axisLabel", "value": "Temperatura (°C)"},
+              {"id": "color", "value": {"fixedColor": "#E24D42", "mode": "fixed"}},
+              {"id": "custom.axisPlacement", "value": "left"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "precipitacao"},
+            "properties": [
+              {"id": "unit", "value": "mm"},
+              {"id": "custom.axisLabel", "value": "Precipitação (mm)"},
+              {"id": "color", "value": {"fixedColor": "#5794F2", "mode": "fixed"}},
+              {"id": "custom.axisPlacement", "value": "right"}
+            ]
+          }
+        ]
+      },
         "options": {
           "legend": {
             "displayMode": "list",
@@ -396,325 +808,344 @@
         }
       },
       {
-        "id": 8,
-        "title": "Estatísticas por Estação",
-        "type": "table",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20},
-        "targets": [
-          {
-            "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
-            "editorMode": "code",
-            "format": "table",
-            "rawQuery": true,
-            "rawSql": "SELECT nome_estacao, uf, total_registros, registros_chuva_leve, registros_chuva_moderada, registros_chuva_forte, ROUND(precip_media, 2) as precip_media, ROUND(temp_media, 2) as temp_media FROM vw_estatisticas_por_estacao ORDER BY nome_estacao;",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "custom": {
-              "align": "auto",
-              "displayMode": "auto"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"color": "green", "value": null}
-              ]
-            }
-          },
-          "overrides": []
-        },
-        "options": {
-          "showHeader": true,
-          "cellHeight": "sm",
-          "footer": {
-            "show": false,
-            "reducer": ["sum"],
-            "countRows": false
-          }
+      "id": 16,
+      "title": "🔥 Mapa de Calor - Correlação de Variáveis",
+      "type": "heatmap",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 39},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT DATE(timestamp_utc) as time, intensidade_chuva, COALESCE(COUNT(*), 0) as count FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL GROUP BY DATE(timestamp_utc), intensidade_chuva ORDER BY time, CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+          "refId": "A"
         }
-      },
-      {
-        "id": 9,
-        "title": "🤖 Predições ML - Resumo",
-        "type": "stat",
-        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 30},
-        "targets": [
-          {
-            "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
-            "editorMode": "code",
-            "format": "table",
-            "rawQuery": true,
-            "rawSql": "SELECT total_predicoes FROM vw_estatisticas_predicoes_ml;",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"color": "blue", "value": null}
-              ]
-            },
-            "unit": "short",
-            "displayName": "Total Predições ML"
-          }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "spectrum",
+            "fill": "#5794F2",
+            "reverse": false
+          },
+          "custom": {
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false}
+          },
+          "mappings": [],
+          "unit": "short"
         },
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto",
-          "reduceOptions": {
-            "values": false,
-            "calcs": ["lastNotNull"],
-            "fields": ""
-          },
-          "textMode": "auto"
-        }
+        "overrides": []
       },
-      {
-        "id": 10,
-        "title": "🤖 Modelos Utilizados",
-        "type": "stat",
-        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 30},
-        "targets": [
-          {
-            "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
-            "editorMode": "code",
-            "format": "table",
-            "rawQuery": true,
-            "rawSql": "SELECT modelos_utilizados FROM vw_estatisticas_predicoes_ml;",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"color": "green", "value": null}
-              ]
-            },
-            "unit": "short",
-            "displayName": "Modelos"
-          }
+      "options": {
+        "calculate": false,
+        "cellGap": 2,
+        "cellValues": {
+          "unit": "short"
         },
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto",
-          "reduceOptions": {
-            "values": false,
-            "calcs": ["lastNotNull"],
-            "fields": ""
-          },
-          "textMode": "auto"
-        }
-      },
-      {
-        "id": 11,
-        "title": "🤖 Estações com Predições ML",
-        "type": "stat",
-        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 30},
-        "targets": [
-          {
-            "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
-            "editorMode": "code",
-            "format": "table",
-            "rawQuery": true,
-            "rawSql": "SELECT estacoes_com_predicoes FROM vw_estatisticas_predicoes_ml;",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"color": "purple", "value": null}
-              ]
-            },
-            "unit": "short",
-            "displayName": "Estações"
-          }
+        "color": {
+          "exponent": 0.5,
+          "fill": "#5794F2",
+          "mode": "spectrum",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 64
         },
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto",
-          "reduceOptions": {
-            "values": false,
-            "calcs": ["lastNotNull"],
-            "fields": ""
-          },
-          "textMode": "auto"
-        }
-      },
-      {
-        "id": 12,
-        "title": "🤖 Distribuição Predições ML",
-        "type": "barchart",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 34},
-        "targets": [
-          {
-            "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
-            "editorMode": "code",
-            "format": "table",
-            "rawQuery": true,
-            "rawSql": "SELECT intensidade_predita, COUNT(*) as total FROM vw_predicoes_ml GROUP BY intensidade_predita ORDER BY CASE intensidade_predita WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic",
-              "fixedColor": "blue"
-            },
-            "custom": {
-              "hideFrom": {"tooltip": false, "viz": false, "legend": false}
-            },
-            "mappings": [
-              {
-                "options": {
-                  "sem_chuva": {"text": "Sem Chuva", "color": "blue"},
-                  "leve": {"text": "Leve", "color": "green"},
-                  "moderada": {"text": "Moderada", "color": "yellow"},
-                  "forte": {"text": "Forte", "color": "red"}
-                },
-                "type": "value"
-              }
-            ],
-            "unit": "short"
-          },
-          "overrides": []
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
         },
-        "options": {
-          "legend": {
-            "displayMode": "list",
-            "placement": "bottom",
-            "showLegend": true
-          },
-          "tooltip": {
-            "mode": "single"
-          },
-          "barRadius": 0,
-          "barWidth": 0.97,
-          "groupWidth": 0.7,
-          "orientation": "auto",
-          "stacking": "none",
-          "xTickLabelRotation": 0,
-          "xTickLabelSpacing": 0
-        }
-      },
-      {
-        "id": 13,
-        "title": "🤖 Predições ML Recentes",
-        "type": "table",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 34},
-        "targets": [
-          {
-            "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
-            "editorMode": "code",
-            "format": "table",
-            "rawQuery": true,
-            "rawSql": "SELECT estacao_nome, intensidade_predita, ROUND(probabilidade_forte::numeric, 2) as prob_forte, ROUND(probabilidade_moderada::numeric, 2) as prob_moderada, ROUND(probabilidade_leve::numeric, 2) as prob_leve, ROUND(probabilidade_sem_chuva::numeric, 2) as prob_sem_chuva, modelo_usado, timestamp_utc FROM vw_predicoes_ml ORDER BY timestamp_utc DESC LIMIT 20;",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "custom": {
-              "align": "auto",
-              "displayMode": "auto"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"color": "green", "value": null}
-              ]
-            }
-          },
-          "overrides": []
+        "filterValues": {
+          "le": 1e-9
         },
-        "options": {
-          "showHeader": true,
-          "cellHeight": "sm",
-          "footer": {
-            "show": false,
-            "reducer": ["sum"],
-            "countRows": false
-          }
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "unit": "short"
         }
-      },
-      {
-        "id": 14,
-        "title": "🤖 Comparação ML vs SQL (Classificação)",
-        "type": "table",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 42},
-        "targets": [
-          {
-            "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
-            "editorMode": "code",
-            "format": "table",
-            "rawQuery": true,
-            "rawSql": "SELECT estacao_nome, classificacao_sql, classificacao_ml, status_comparacao, ROUND(probabilidade_forte::numeric, 2) as prob_forte, ROUND(probabilidade_moderada::numeric, 2) as prob_moderada, ROUND(probabilidade_leve::numeric, 2) as prob_leve, ROUND(probabilidade_sem_chuva::numeric, 2) as prob_sem_chuva, modelo_usado, time FROM vw_comparacao_ml_sql WHERE status_comparacao = 'diferenca' ORDER BY time DESC LIMIT 50;",
-            "refId": "A"
-          }
-        ],
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "custom": {
-              "align": "auto",
-              "displayMode": "auto"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"color": "green", "value": null}
-              ]
-            }
+      }
+    },
+    {
+      "id": 17,
+      "title": "📊 Distribuição por Estação (Top 10)",
+      "type": "barchart",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 48},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT nome_estacao, intensidade_chuva, COALESCE(total_registros, 0) as total FROM vw_distribuicao_intensidade_estacao WHERE nome_estacao IS NOT NULL AND intensidade_chuva IS NOT NULL AND nome_estacao IN (SELECT nome_estacao FROM vw_estatisticas_por_estacao ORDER BY precip_total DESC LIMIT 10) ORDER BY nome_estacao, CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
           },
-          "overrides": [
+          "custom": {
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false}
+          },
+          "mappings": [
             {
-              "matcher": {"id": "byName", "options": "status_comparacao"},
-              "properties": [
-                {
-                  "id": "custom.cellOptions",
-                  "value": {
-                    "type": "color-background"
-                  }
-                },
-                {
-                  "id": "thresholds",
-                  "value": {
-                    "mode": "absolute",
-                    "steps": [
-                      {"color": "green", "value": null},
-                      {"color": "yellow", "value": 1}
-                    ]
-                  }
-                }
+              "options": {
+                "sem_chuva": {"text": "Sem Chuva", "color": "#5794F2"},
+                "leve": {"text": "Leve", "color": "#56A64B"},
+                "moderada": {"text": "Moderada", "color": "#FADE2A"},
+                "forte": {"text": "Forte", "color": "#E24D42"}
+              },
+              "type": "value"
+            }
+          ],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        },
+        "barRadius": 0.5,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "orientation": "auto",
+        "stacking": "normal",
+        "xTickLabelRotation": -45,
+        "xTickLabelSpacing": 0
+      }
+    },
+    {
+      "id": 18,
+      "title": "⏰ Distribuição Horária de Precipitação",
+      "type": "timeseries",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 48},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT DATE_TRUNC('hour', timestamp_utc) as time, COALESCE(AVG(precipitacao_mm), 0) as precip_media, COALESCE(MAX(precipitacao_mm), 0) as precip_max FROM dados_meteorologicos WHERE $__timeFilter(timestamp_utc) AND intensidade_chuva IS NOT NULL GROUP BY DATE_TRUNC('hour', timestamp_utc) ORDER BY time LIMIT 10000;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "auto",
+            "pointSize": 5,
+            "stacking": {"group": "A", "mode": "none"},
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {"type": "linear"},
+            "axisCenteredZero": false,
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          },
+          "unit": "mm"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "precip_max"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#E24D42", "mode": "fixed"}},
+              {"id": "custom.drawStyle", "value": "points"},
+              {"id": "custom.pointSize", "value": 8}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "title": "📊 Estatísticas de Correlação por Intensidade",
+        "type": "table",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 57},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+            "editorMode": "code",
+            "format": "table",
+            "rawQuery": true,
+          "rawSql": "SELECT intensidade_chuva, COALESCE(ROUND(temp_media, 2), 0) as temp_media, COALESCE(ROUND(umidade_media, 2), 0) as umidade_media, COALESCE(ROUND(pressao_media, 2), 0) as pressao_media, COALESCE(ROUND(vento_medio, 2), 0) as vento_medio, COALESCE(ROUND(precip_media, 2), 0) as precip_media FROM vw_correlacao_intensidade WHERE intensidade_chuva IS NOT NULL ORDER BY CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {
+            "align": "auto",
+            "displayMode": "gradient"
+          },
+          "mappings": [
+            {
+              "options": {
+                "sem_chuva": {"text": "Sem Chuva", "color": "#5794F2"},
+                "leve": {"text": "Leve", "color": "#56A64B"},
+                "moderada": {"text": "Moderada", "color": "#FADE2A"},
+                "forte": {"text": "Forte", "color": "#E24D42"}
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "temp_media"},
+            "properties": [
+              {"id": "unit", "value": "celsius"},
+              {"id": "custom.displayMode", "value": "gradient"},
+              {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "umidade_media"},
+            "properties": [
+              {"id": "unit", "value": "percent"},
+              {"id": "custom.displayMode", "value": "gradient"},
+              {"id": "color", "value": {"mode": "continuous-BlPu"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "precip_media"},
+            "properties": [
+              {"id": "unit", "value": "mm"},
+              {"id": "custom.displayMode", "value": "gradient"},
+              {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": ["sum"],
+          "countRows": false
+        }
+      }
+    },
+    {
+      "id": 20,
+      "title": "📋 Dados Recentes (Últimas 24h)",
+      "type": "table",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 57},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT nome_estacao, uf, TO_CHAR(timestamp_utc, 'DD/MM/YYYY HH24:MI') as data_hora, intensidade_chuva, COALESCE(ROUND(precipitacao_mm, 2), 0) as precip_mm, COALESCE(ROUND(temperatura_ar_c, 2), 0) as temp_c, COALESCE(ROUND(umidade_rel_horaria_pct, 2), 0) as umidade_pct FROM vw_dados_recentes_7_dias WHERE timestamp_utc >= NOW() - INTERVAL '24 hours' ORDER BY timestamp_utc DESC LIMIT 100;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            },
+          "mappings": [
+            {
+              "options": {
+                "sem_chuva": {"text": "Sem Chuva", "color": "#5794F2"},
+                "leve": {"text": "Leve", "color": "#56A64B"},
+                "moderada": {"text": "Moderada", "color": "#FADE2A"},
+                "forte": {"text": "Forte", "color": "#E24D42"}
+              },
+              "type": "value"
+            }
+          ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null}
               ]
             }
-          ]
+          },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "intensidade_chuva"},
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "precip_mm"},
+            "properties": [
+              {"id": "unit", "value": "mm"},
+              {"id": "custom.displayMode", "value": "gradient"},
+              {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "temp_c"},
+            "properties": [
+              {"id": "unit", "value": "celsius"},
+              {"id": "custom.displayMode", "value": "gradient"},
+              {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+            ]
+          }
+        ]
         },
         "options": {
           "showHeader": true,
@@ -722,7 +1153,316 @@
           "footer": {
             "show": false,
             "reducer": ["sum"],
-            "countRows": false
+          "countRows": true
+        }
+      }
+    },
+    {
+      "id": 21,
+      "title": "🎯 Precipitação Máxima",
+      "type": "gauge",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 67},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(ROUND(precip_max_geral, 2), 0) as value FROM vw_resumo_geral;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 10},
+              {"color": "orange", "value": 25},
+              {"color": "red", "value": 50}
+            ]
+          },
+          "unit": "mm",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "text": {}
+      }
+    },
+    {
+      "id": 22,
+      "title": "🌡️ Temperatura Média",
+      "type": "gauge",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 67},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(ROUND(temp_media_geral, 2), 0) as value FROM vw_resumo_geral;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 15},
+              {"color": "yellow", "value": 25},
+              {"color": "red", "value": 35}
+            ]
+          },
+          "unit": "celsius",
+          "min": 0,
+          "max": 40
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "text": {}
+      }
+    },
+    {
+      "id": 23,
+      "title": "💧 Umidade Média",
+      "type": "gauge",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 67},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(ROUND(umidade_media_geral, 2), 0) as value FROM vw_resumo_geral;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 40},
+              {"color": "green", "value": 60},
+              {"color": "blue", "value": 80}
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "text": {}
+      }
+    },
+    {
+      "id": 24,
+      "title": "📈 Área Empilhada por Intensidade",
+      "type": "timeseries",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 73},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT data as time, COALESCE(precip_media_dia, 0) as value, intensidade_chuva FROM vw_temporal_diaria_intensidade WHERE $__timeFilter(data) AND intensidade_chuva IS NOT NULL ORDER BY data, CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END LIMIT 10000;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {"group": "A", "mode": "normal"},
+            "axisPlacement": "auto",
+            "axisLabel": "Precipitação (mm)",
+            "axisColorMode": "text",
+            "scaleDistribution": {"type": "linear"},
+            "axisCenteredZero": false,
+            "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          },
+          "unit": "mm"
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "sem_chuva"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#5794F2", "mode": "fixed"}},
+              {"id": "custom.drawStyle", "value": "area"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "leve"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#56A64B", "mode": "fixed"}},
+              {"id": "custom.drawStyle", "value": "area"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "moderada"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#FADE2A", "mode": "fixed"}},
+              {"id": "custom.drawStyle", "value": "area"}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "forte"},
+            "properties": [
+              {"id": "color", "value": {"fixedColor": "#E24D42", "mode": "fixed"}},
+              {"id": "custom.drawStyle", "value": "area"}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "transformations": [
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "intensidade_chuva": {
+                "aggregations": [],
+                "operation": "groupby",
+                "as": "intensidade_chuva"
+              },
+              "value": {
+                "aggregations": ["sum"],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "📊 Estatísticas por Estação",
+      "type": "table",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 73},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT nome_estacao, uf, COALESCE(total_registros, 0) as total_registros, COALESCE(registros_chuva_leve, 0) as chuva_leve, COALESCE(registros_chuva_moderada, 0) as chuva_moderada, COALESCE(registros_chuva_forte, 0) as chuva_forte, COALESCE(ROUND(precip_media, 2), 0) as precip_media, COALESCE(ROUND(temp_media, 2), 0) as temp_media, COALESCE(ROUND(umidade_media, 2), 0) as umidade_media FROM vw_estatisticas_por_estacao WHERE nome_estacao IS NOT NULL ORDER BY precip_media DESC;",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null}
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "precip_media"},
+            "properties": [
+              {"id": "unit", "value": "mm"},
+              {"id": "custom.displayMode", "value": "gradient"},
+              {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "temp_media"},
+            "properties": [
+              {"id": "unit", "value": "celsius"},
+              {"id": "custom.displayMode", "value": "gradient"},
+              {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "umidade_media"},
+            "properties": [
+              {"id": "unit", "value": "percent"},
+              {"id": "custom.displayMode", "value": "gradient"},
+              {"id": "color", "value": {"mode": "continuous-BlPu"}}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": ["sum"],
+          "countRows": true
           }
         }
       }
@@ -731,16 +1471,91 @@
     "from": "now-30d",
     "to": "now"
   },
-  "timepicker": {},
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+  },
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+        "definition": "SELECT DISTINCT uf FROM estacoes ORDER BY uf;",
+        "hide": 0,
+        "includeAll": true,
+        "label": "UF",
+        "multi": true,
+        "name": "uf",
+        "options": [],
+        "query": {
+          "query": "SELECT DISTINCT uf FROM estacoes ORDER BY uf;",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+        "definition": "SELECT DISTINCT nome FROM estacoes WHERE ($uf = 'All' OR uf IN ($uf)) ORDER BY nome;",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Estação",
+        "multi": true,
+        "name": "estacao",
+        "options": [],
+        "query": {
+          "query": "SELECT DISTINCT nome FROM estacoes WHERE ($uf = 'All' OR uf IN ($uf)) ORDER BY nome;",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {"type": "postgres", "uid": "postgresql-inmet"},
+        "definition": "SELECT DISTINCT intensidade_chuva FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL ORDER BY CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Intensidade",
+        "multi": true,
+        "name": "intensidade",
+        "options": [],
+        "query": {
+          "query": "SELECT DISTINCT intensidade_chuva FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL ORDER BY CASE intensidade_chuva WHEN 'sem_chuva' THEN 1 WHEN 'leve' THEN 2 WHEN 'moderada' THEN 3 WHEN 'forte' THEN 4 END;",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "annotations": {
     "list": []
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "links": [],
   "liveNow": false,
   "weekStart": ""

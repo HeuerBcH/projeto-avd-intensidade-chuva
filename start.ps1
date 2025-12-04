@@ -151,10 +151,28 @@ if ($fastapiReady -and $postgresReady) {
         Write-Host '      POST http://localhost:8000/ingest-from-thingsboard' -ForegroundColor Gray
     }
     
-    # 3. Cria views para Grafana (sempre executa, mesmo sem dados)
+    # 3. Configura ML no Grafana PRIMEIRO (cria tabela antes das views)
+    $sqlML = 'sql_scripts\05_setup_ml_grafana.sql'
+    if (Test-Path $sqlML) {
+        Write-Host '   [3/6] Configurando integracao ML no Grafana (criando tabela primeiro)...' -ForegroundColor Gray
+        try {
+            Get-Content $sqlML | docker exec -i postgres-inmet psql -U inmet_user -d inmet_db | Out-Null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host 'OK: Tabela e views ML criadas!' -ForegroundColor Green
+            } else {
+                Write-Host 'AVISO: Configuracao ML pode nao ter sido aplicada completamente' -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host 'AVISO: Erro ao configurar ML no Grafana' -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "AVISO: Script SQL ML nao encontrado: $sqlML" -ForegroundColor Yellow
+    }
+    
+    # 4. Cria views para Grafana (sempre executa, mesmo sem dados)
     $sqlViews = 'sql_scripts\04_views_grafana.sql'
     if (Test-Path $sqlViews) {
-        Write-Host '   [3/4] Criando views para Grafana...' -ForegroundColor Gray
+        Write-Host '   [4/6] Criando views para Grafana...' -ForegroundColor Gray
         try {
             Get-Content $sqlViews | docker exec -i postgres-inmet psql -U inmet_user -d inmet_db | Out-Null
             if ($LASTEXITCODE -eq 0) {
@@ -169,8 +187,48 @@ if ($fastapiReady -and $postgresReady) {
         Write-Host "AVISO: Script SQL nao encontrado: $sqlViews" -ForegroundColor Yellow
     }
     
-    # 4. Verifica estatísticas finais
-    Write-Host '   [4/4] Verificando estatísticas do banco...' -ForegroundColor Gray
+    # 5. Gera predições ML (se houver dados e modelo disponível)
+    Write-Host '   [5/6] Verificando se deve gerar predicoes ML...' -ForegroundColor Gray
+    try {
+        # Verifica se há dados classificados
+        $dadosCount = docker exec postgres-inmet psql -U inmet_user -d inmet_db -t -c "SELECT COUNT(*) FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL;" 2>&1
+        $dadosCount = ($dadosCount -split "`n" | Where-Object { $_.Trim() -ne '' } | Select-Object -First 1).Trim()
+        
+        if ($dadosCount -and [int]$dadosCount -gt 0) {
+            # Verifica se FastAPI está pronto
+            try {
+                $fastapiCheck = Invoke-WebRequest -Uri 'http://localhost:8000/models/info' -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
+                if ($fastapiCheck.StatusCode -eq 200) {
+                    $modelInfo = $fastapiCheck.Content | ConvertFrom-Json
+                    if ($modelInfo.model_info.loaded) {
+                        Write-Host "   Gerando predicoes ML para $dadosCount registros (limitado a 50)..." -ForegroundColor Gray
+                        try {
+                            $predictResponse = Invoke-WebRequest -Uri "http://localhost:8000/predict-from-db?limit=50" -Method POST -TimeoutSec 60 -UseBasicParsing -ErrorAction SilentlyContinue
+                            if ($predictResponse.StatusCode -eq 200) {
+                                $result = $predictResponse.Content | ConvertFrom-Json
+                                Write-Host "OK: $($result.total) predicoes ML geradas!" -ForegroundColor Green
+                            }
+                        } catch {
+                            Write-Host 'AVISO: Nao foi possivel gerar predicoes ML automaticamente' -ForegroundColor Yellow
+                            Write-Host '   Execute manualmente: .\gerar_predicoes_ml.ps1' -ForegroundColor Gray
+                        }
+                    } else {
+                        Write-Host 'AVISO: Modelo ML nao esta carregado. Pulando geracao de predicoes.' -ForegroundColor Yellow
+                        Write-Host '   Execute: POST http://localhost:8000/models/load' -ForegroundColor Gray
+                    }
+                }
+            } catch {
+                Write-Host 'AVISO: Nao foi possivel verificar modelo ML. Pulando geracao de predicoes.' -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host 'AVISO: Nenhum dado classificado encontrado. Predicoes ML serao puladas.' -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host 'AVISO: Erro ao verificar dados para predicoes ML' -ForegroundColor Yellow
+    }
+    
+    # 6. Verifica estatísticas finais
+    Write-Host '   [6/6] Verificando estatísticas do banco...' -ForegroundColor Gray
     try {
         $stats = docker exec postgres-inmet psql -U inmet_user -d inmet_db -t -c "SELECT COUNT(*) FROM estacoes; SELECT COUNT(*) FROM dados_meteorologicos; SELECT COUNT(*) FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL;"
         if ($LASTEXITCODE -eq 0) {
@@ -223,6 +281,19 @@ if (-not $grafanaReady) {
 } else {
     Write-Host '   Dashboard "Intensidade de Chuva - INMET" disponivel automaticamente!' -ForegroundColor Green
     Write-Host '   Acesse: Dashboards > Intensidade de Chuva - INMET' -ForegroundColor Gray
+    
+    # Força atualização do dashboard do Grafana
+    Write-Host ''
+    Write-Host 'Forcando atualizacao do dashboard do Grafana...' -ForegroundColor Yellow
+    try {
+        # Reinicia Grafana para garantir que o dashboard provisionado seja recarregado
+        docker restart grafana | Out-Null
+        Write-Host 'OK: Grafana reiniciado para aplicar todas as configuracoes!' -ForegroundColor Green
+        Write-Host '   Aguarde 10 segundos para o Grafana reiniciar completamente...' -ForegroundColor Gray
+        Start-Sleep -Seconds 10
+    } catch {
+        Write-Host 'AVISO: Nao foi possivel reiniciar Grafana automaticamente' -ForegroundColor Yellow
+    }
 }
 
 Write-Host ''
@@ -239,6 +310,12 @@ Write-Host 'Endpoints uteis do FastAPI:' -ForegroundColor Cyan
 Write-Host '  - Popular ThingsBoard: POST http://localhost:8000/populate-thingsboard' -ForegroundColor Gray
 Write-Host '  - Ingerir dados:       POST http://localhost:8000/ingest-from-thingsboard' -ForegroundColor Gray
 Write-Host '  - Estatísticas:        GET  http://localhost:8000/stats' -ForegroundColor Gray
+Write-Host '  - Gerar predicoes ML:  POST http://localhost:8000/predict-from-db?limit=100' -ForegroundColor Gray
+Write-Host ''
+Write-Host 'Scripts adicionais disponiveis:' -ForegroundColor Cyan
+Write-Host '  - Gerar predicoes ML:  .\gerar_predicoes_ml.ps1' -ForegroundColor Gray
+Write-Host '  - Atualizar views:     .\atualizar_views_grafana.ps1' -ForegroundColor Gray
+Write-Host '  - Corrigir "no data":  .\corrigir_tudo_urgente.ps1' -ForegroundColor Gray
 Write-Host ''
 Write-Host 'Para ver os logs: docker compose logs -f' -ForegroundColor Yellow
 Write-Host 'Para parar: docker compose down' -ForegroundColor Yellow

@@ -91,22 +91,23 @@ ORDER BY dm.timestamp_utc DESC;
 
 -- ============================================================
 -- VIEW 12: Estatísticas de Predições ML
+-- Retorna valores padrão (0) quando não há predições
 -- ============================================================
 CREATE VIEW vw_estatisticas_predicoes_ml AS
 SELECT 
-    COUNT(*) as total_predicoes,
-    COUNT(DISTINCT codigo_wmo) as estacoes_com_predicoes,
+    COALESCE(COUNT(*), 0) as total_predicoes,
+    COALESCE(COUNT(DISTINCT codigo_wmo), 0) as estacoes_com_predicoes,
     MIN(timestamp_utc) as primeira_predicao,
     MAX(timestamp_utc) as ultima_predicao,
-    SUM(CASE WHEN intensidade_predita = 'sem_chuva' THEN 1 ELSE 0 END) as predicoes_sem_chuva,
-    SUM(CASE WHEN intensidade_predita = 'leve' THEN 1 ELSE 0 END) as predicoes_leve,
-    SUM(CASE WHEN intensidade_predita = 'moderada' THEN 1 ELSE 0 END) as predicoes_moderada,
-    SUM(CASE WHEN intensidade_predita = 'forte' THEN 1 ELSE 0 END) as predicoes_forte,
-    COUNT(DISTINCT modelo_usado) as modelos_utilizados,
-    AVG(probabilidade_forte) as prob_media_forte,
-    AVG(probabilidade_moderada) as prob_media_moderada,
-    AVG(probabilidade_leve) as prob_media_leve,
-    AVG(probabilidade_sem_chuva) as prob_media_sem_chuva
+    COALESCE(SUM(CASE WHEN intensidade_predita = 'sem_chuva' THEN 1 ELSE 0 END), 0) as predicoes_sem_chuva,
+    COALESCE(SUM(CASE WHEN intensidade_predita = 'leve' THEN 1 ELSE 0 END), 0) as predicoes_leve,
+    COALESCE(SUM(CASE WHEN intensidade_predita = 'moderada' THEN 1 ELSE 0 END), 0) as predicoes_moderada,
+    COALESCE(SUM(CASE WHEN intensidade_predita = 'forte' THEN 1 ELSE 0 END), 0) as predicoes_forte,
+    COALESCE(COUNT(DISTINCT modelo_usado), 0) as modelos_utilizados,
+    COALESCE(AVG(probabilidade_forte), 0) as prob_media_forte,
+    COALESCE(AVG(probabilidade_moderada), 0) as prob_media_moderada,
+    COALESCE(AVG(probabilidade_leve), 0) as prob_media_leve,
+    COALESCE(AVG(probabilidade_sem_chuva), 0) as prob_media_sem_chuva
 FROM predicoes_intensidade;
 
 -- Comentários

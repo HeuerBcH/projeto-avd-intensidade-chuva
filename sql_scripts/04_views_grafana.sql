@@ -17,15 +17,20 @@ DROP VIEW IF EXISTS vw_grafico_barras_intensidade CASCADE;
 -- ============================================================
 -- VIEW 1: Gráfico de Barras por Classe de Intensidade
 -- Especificação: "Gráfico de barras por classe"
+-- Sempre retorna dados (mesmo que zero)
 -- ============================================================
 CREATE VIEW vw_grafico_barras_intensidade AS
 SELECT 
-    intensidade_chuva,
-    COUNT(*) as total_registros,
-    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL), 2) as percentual,
-    AVG(precipitacao_mm) as precip_media,
-    MAX(precipitacao_mm) as precip_max,
-    MIN(precipitacao_mm) as precip_min
+    COALESCE(intensidade_chuva, 'sem_chuva') as intensidade_chuva,
+    COALESCE(COUNT(*), 0) as total_registros,
+    CASE 
+        WHEN (SELECT COUNT(*) FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL) > 0
+        THEN ROUND(COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM dados_meteorologicos WHERE intensidade_chuva IS NOT NULL), 0), 2)
+        ELSE 0
+    END as percentual,
+    COALESCE(AVG(precipitacao_mm), 0) as precip_media,
+    COALESCE(MAX(precipitacao_mm), 0) as precip_max,
+    COALESCE(MIN(precipitacao_mm), 0) as precip_min
 FROM dados_meteorologicos
 WHERE intensidade_chuva IS NOT NULL
 GROUP BY intensidade_chuva
@@ -41,19 +46,20 @@ ORDER BY
 -- ============================================================
 -- VIEW 2: Linha Temporal Colorida por Categoria
 -- Especificação: "linha temporal colorida por categoria"
+-- Sempre retorna dados (mesmo que zero)
 -- ============================================================
 CREATE VIEW vw_temporal_diaria_intensidade AS
 SELECT 
     DATE(timestamp_utc) as data,
-    intensidade_chuva,
-    COUNT(*) as total_registros,
-    SUM(precipitacao_mm) as precip_total_dia,
-    AVG(precipitacao_mm) as precip_media_dia,
-    MAX(precipitacao_mm) as precip_max_dia,
-    AVG(temperatura_ar_c) as temp_media,
-    AVG(umidade_rel_horaria_pct) as umidade_media,
-    AVG(pressao_estacao_mb) as pressao_media,
-    AVG(vento_velocidade_ms) as vento_medio
+    COALESCE(intensidade_chuva, 'sem_chuva') as intensidade_chuva,
+    COALESCE(COUNT(*), 0) as total_registros,
+    COALESCE(SUM(precipitacao_mm), 0) as precip_total_dia,
+    COALESCE(AVG(precipitacao_mm), 0) as precip_media_dia,
+    COALESCE(MAX(precipitacao_mm), 0) as precip_max_dia,
+    COALESCE(AVG(temperatura_ar_c), 0) as temp_media,
+    COALESCE(AVG(umidade_rel_horaria_pct), 0) as umidade_media,
+    COALESCE(AVG(pressao_estacao_mb), 0) as pressao_media,
+    COALESCE(AVG(vento_velocidade_ms), 0) as vento_medio
 FROM dados_meteorologicos
 WHERE intensidade_chuva IS NOT NULL
 GROUP BY DATE(timestamp_utc), intensidade_chuva
@@ -68,6 +74,7 @@ ORDER BY data DESC,
 -- ============================================================
 -- VIEW 3: Estatísticas por Estação
 -- Especificação: Análise por estação meteorológica
+-- Sempre retorna dados (mesmo que zero)
 -- ============================================================
 CREATE VIEW vw_estatisticas_por_estacao AS
 SELECT 
@@ -76,31 +83,30 @@ SELECT
     e.uf,
     e.latitude,
     e.longitude,
-    COUNT(dm.id) as total_registros,
+    COALESCE(COUNT(dm.id), 0) as total_registros,
     MIN(dm.timestamp_utc) as data_inicio,
     MAX(dm.timestamp_utc) as data_fim,
     -- Estatísticas de precipitação
-    SUM(CASE WHEN dm.intensidade_chuva != 'sem_chuva' THEN 1 ELSE 0 END) as registros_com_chuva,
-    SUM(CASE WHEN dm.intensidade_chuva = 'leve' THEN 1 ELSE 0 END) as registros_chuva_leve,
-    SUM(CASE WHEN dm.intensidade_chuva = 'moderada' THEN 1 ELSE 0 END) as registros_chuva_moderada,
-    SUM(CASE WHEN dm.intensidade_chuva = 'forte' THEN 1 ELSE 0 END) as registros_chuva_forte,
-    AVG(dm.precipitacao_mm) as precip_media,
-    MAX(dm.precipitacao_mm) as precip_max,
-    SUM(dm.precipitacao_mm) as precip_total,
+    COALESCE(SUM(CASE WHEN dm.intensidade_chuva != 'sem_chuva' THEN 1 ELSE 0 END), 0) as registros_com_chuva,
+    COALESCE(SUM(CASE WHEN dm.intensidade_chuva = 'leve' THEN 1 ELSE 0 END), 0) as registros_chuva_leve,
+    COALESCE(SUM(CASE WHEN dm.intensidade_chuva = 'moderada' THEN 1 ELSE 0 END), 0) as registros_chuva_moderada,
+    COALESCE(SUM(CASE WHEN dm.intensidade_chuva = 'forte' THEN 1 ELSE 0 END), 0) as registros_chuva_forte,
+    COALESCE(AVG(dm.precipitacao_mm), 0) as precip_media,
+    COALESCE(MAX(dm.precipitacao_mm), 0) as precip_max,
+    COALESCE(SUM(dm.precipitacao_mm), 0) as precip_total,
     -- Estatísticas de temperatura
-    AVG(dm.temperatura_ar_c) as temp_media,
-    MAX(dm.temperatura_ar_c) as temp_max,
-    MIN(dm.temperatura_ar_c) as temp_min,
+    COALESCE(AVG(dm.temperatura_ar_c), 0) as temp_media,
+    COALESCE(MAX(dm.temperatura_ar_c), 0) as temp_max,
+    COALESCE(MIN(dm.temperatura_ar_c), 0) as temp_min,
     -- Estatísticas de umidade
-    AVG(dm.umidade_rel_horaria_pct) as umidade_media,
+    COALESCE(AVG(dm.umidade_rel_horaria_pct), 0) as umidade_media,
     -- Estatísticas de pressão
-    AVG(dm.pressao_estacao_mb) as pressao_media,
+    COALESCE(AVG(dm.pressao_estacao_mb), 0) as pressao_media,
     -- Estatísticas de vento
-    AVG(dm.vento_velocidade_ms) as vento_medio,
-    MAX(dm.vento_rajada_max_ms) as vento_rajada_max
+    COALESCE(AVG(dm.vento_velocidade_ms), 0) as vento_medio,
+    COALESCE(MAX(dm.vento_rajada_max_ms), 0) as vento_rajada_max
 FROM estacoes e
-LEFT JOIN dados_meteorologicos dm ON e.codigo_wmo = dm.codigo_wmo
-WHERE dm.intensidade_chuva IS NOT NULL
+LEFT JOIN dados_meteorologicos dm ON e.codigo_wmo = dm.codigo_wmo AND dm.intensidade_chuva IS NOT NULL
 GROUP BY e.codigo_wmo, e.nome, e.uf, e.latitude, e.longitude
 ORDER BY e.nome;
 
@@ -210,22 +216,23 @@ ORDER BY
 
 -- ============================================================
 -- VIEW 8: Resumo Geral (Para Cards/Métricas)
+-- Sempre retorna valores (0 quando não há dados)
 -- ============================================================
 CREATE VIEW vw_resumo_geral AS
 SELECT 
-    COUNT(DISTINCT codigo_wmo) as total_estacoes,
-    COUNT(*) as total_registros,
-    COUNT(*) FILTER (WHERE intensidade_chuva IS NOT NULL) as registros_classificados,
+    COALESCE(COUNT(DISTINCT codigo_wmo), 0) as total_estacoes,
+    COALESCE(COUNT(*), 0) as total_registros,
+    COALESCE(COUNT(*) FILTER (WHERE intensidade_chuva IS NOT NULL), 0) as registros_classificados,
     MIN(timestamp_utc) as data_inicio,
     MAX(timestamp_utc) as data_fim,
-    SUM(CASE WHEN intensidade_chuva = 'sem_chuva' THEN 1 ELSE 0 END) as total_sem_chuva,
-    SUM(CASE WHEN intensidade_chuva = 'leve' THEN 1 ELSE 0 END) as total_leve,
-    SUM(CASE WHEN intensidade_chuva = 'moderada' THEN 1 ELSE 0 END) as total_moderada,
-    SUM(CASE WHEN intensidade_chuva = 'forte' THEN 1 ELSE 0 END) as total_forte,
-    AVG(precipitacao_mm) as precip_media_geral,
-    MAX(precipitacao_mm) as precip_max_geral,
-    AVG(temperatura_ar_c) as temp_media_geral,
-    AVG(umidade_rel_horaria_pct) as umidade_media_geral
+    COALESCE(SUM(CASE WHEN intensidade_chuva = 'sem_chuva' THEN 1 ELSE 0 END), 0) as total_sem_chuva,
+    COALESCE(SUM(CASE WHEN intensidade_chuva = 'leve' THEN 1 ELSE 0 END), 0) as total_leve,
+    COALESCE(SUM(CASE WHEN intensidade_chuva = 'moderada' THEN 1 ELSE 0 END), 0) as total_moderada,
+    COALESCE(SUM(CASE WHEN intensidade_chuva = 'forte' THEN 1 ELSE 0 END), 0) as total_forte,
+    COALESCE(AVG(precipitacao_mm), 0) as precip_media_geral,
+    COALESCE(MAX(precipitacao_mm), 0) as precip_max_geral,
+    COALESCE(AVG(temperatura_ar_c), 0) as temp_media_geral,
+    COALESCE(AVG(umidade_rel_horaria_pct), 0) as umidade_media_geral
 FROM dados_meteorologicos;
 
 -- ============================================================
@@ -248,80 +255,9 @@ GROUP BY codigo_wmo, DATE(timestamp_utc), intensidade_chuva
 ORDER BY data DESC, codigo_wmo;
 
 -- ============================================================
--- VIEW 10: Predições ML (Machine Learning)
--- Para visualização de predições geradas por modelos ML
+-- NOTA: Views ML (vw_predicoes_ml, vw_comparacao_ml_sql, vw_estatisticas_predicoes_ml)
+-- são criadas no script 05_setup_ml_grafana.sql após a tabela predicoes_intensidade ser criada
 -- ============================================================
-CREATE VIEW vw_predicoes_ml AS
-SELECT 
-    id,
-    timestamp_utc as time,
-    codigo_wmo,
-    estacao_nome,
-    precipitacao_mm,
-    pressao_estacao_mb,
-    temperatura_ar_c,
-    umidade_rel_horaria_pct,
-    vento_velocidade_ms,
-    intensidade_predita,
-    probabilidade_forte,
-    probabilidade_moderada,
-    probabilidade_leve,
-    probabilidade_sem_chuva,
-    modelo_usado,
-    created_at
-FROM predicoes_intensidade
-ORDER BY timestamp_utc DESC;
-
--- ============================================================
--- VIEW 11: Comparação ML vs Classificação SQL
--- Compara predições ML com classificação por regras SQL
--- ============================================================
-CREATE VIEW vw_comparacao_ml_sql AS
-SELECT 
-    dm.timestamp_utc as time,
-    dm.codigo_wmo,
-    e.nome as estacao_nome,
-    dm.precipitacao_mm,
-    dm.intensidade_chuva as classificacao_sql,
-    pi.intensidade_predita as classificacao_ml,
-    CASE 
-        WHEN dm.intensidade_chuva = pi.intensidade_predita THEN 'match'
-        ELSE 'diferenca'
-    END as status_comparacao,
-    pi.probabilidade_forte,
-    pi.probabilidade_moderada,
-    pi.probabilidade_leve,
-    pi.probabilidade_sem_chuva,
-    pi.modelo_usado
-FROM dados_meteorologicos dm
-JOIN estacoes e ON dm.codigo_wmo = e.codigo_wmo
-LEFT JOIN predicoes_intensidade pi ON 
-    dm.codigo_wmo = pi.codigo_wmo 
-    AND DATE(dm.timestamp_utc) = DATE(pi.timestamp_utc)
-    AND EXTRACT(HOUR FROM dm.timestamp_utc) = EXTRACT(HOUR FROM pi.timestamp_utc)
-WHERE dm.intensidade_chuva IS NOT NULL
-ORDER BY dm.timestamp_utc DESC;
-
--- ============================================================
--- VIEW 12: Estatísticas de Predições ML
--- Resumo estatístico das predições ML
--- ============================================================
-CREATE VIEW vw_estatisticas_predicoes_ml AS
-SELECT 
-    COUNT(*) as total_predicoes,
-    COUNT(DISTINCT codigo_wmo) as estacoes_com_predicoes,
-    MIN(timestamp_utc) as primeira_predicao,
-    MAX(timestamp_utc) as ultima_predicao,
-    SUM(CASE WHEN intensidade_predita = 'sem_chuva' THEN 1 ELSE 0 END) as predicoes_sem_chuva,
-    SUM(CASE WHEN intensidade_predita = 'leve' THEN 1 ELSE 0 END) as predicoes_leve,
-    SUM(CASE WHEN intensidade_predita = 'moderada' THEN 1 ELSE 0 END) as predicoes_moderada,
-    SUM(CASE WHEN intensidade_predita = 'forte' THEN 1 ELSE 0 END) as predicoes_forte,
-    COUNT(DISTINCT modelo_usado) as modelos_utilizados,
-    AVG(probabilidade_forte) as prob_media_forte,
-    AVG(probabilidade_moderada) as prob_media_moderada,
-    AVG(probabilidade_leve) as prob_media_leve,
-    AVG(probabilidade_sem_chuva) as prob_media_sem_chuva
-FROM predicoes_intensidade;
 
 -- ============================================================
 -- COMENTÁRIOS NAS VIEWS
@@ -335,7 +271,4 @@ COMMENT ON VIEW vw_agregacao_mensal_intensidade IS 'Agregação mensal de intens
 COMMENT ON VIEW vw_correlacao_intensidade IS 'Correlação entre variáveis meteorológicas e intensidade';
 COMMENT ON VIEW vw_resumo_geral IS 'Resumo geral para cards e métricas principais';
 COMMENT ON VIEW vw_heatmap_correlacao IS 'Dados para visualização de heatmap de correlação';
-COMMENT ON VIEW vw_predicoes_ml IS 'Predições de intensidade geradas por modelos de Machine Learning';
-COMMENT ON VIEW vw_comparacao_ml_sql IS 'Comparação entre classificação SQL (regras) e predições ML';
-COMMENT ON VIEW vw_estatisticas_predicoes_ml IS 'Estatísticas gerais das predições ML';
 

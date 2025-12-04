@@ -58,12 +58,15 @@ Write-Host 'Atualizacao concluida!' -ForegroundColor Green
 Write-Host '========================================' -ForegroundColor Cyan
 Write-Host ''
 Write-Host 'Proximos passos:' -ForegroundColor Yellow
-Write-Host '  1. Acesse: http://localhost:3000' -ForegroundColor White
-Write-Host '  2. Faca login: admin / admin' -ForegroundColor White
-Write-Host '  3. Vá em Dashboards > Intensidade de Chuva - INMET' -ForegroundColor White
-Write-Host '  4. Role para baixo para ver os novos paineis ML (🤖)' -ForegroundColor White
+Write-Host '  1. Execute: .\gerar_predicoes_ml.ps1' -ForegroundColor White
+Write-Host '     (Isso vai gerar predicoes ML para popular os paineis)' -ForegroundColor Gray
+Write-Host '  2. Acesse: http://localhost:3000' -ForegroundColor White
+Write-Host '  3. Faca login: admin / admin' -ForegroundColor White
+Write-Host '  4. Vá em Dashboards > Intensidade de Chuva - INMET' -ForegroundColor White
+Write-Host '  5. Role para baixo para ver os novos paineis ML (🤖)' -ForegroundColor White
 Write-Host ''
-Write-Host 'Para gerar predicoes ML:' -ForegroundColor Yellow
-Write-Host '  POST http://localhost:8000/predict-from-db?limit=100' -ForegroundColor Gray
+Write-Host 'Para gerar predicoes ML manualmente:' -ForegroundColor Yellow
+Write-Host '  .\gerar_predicoes_ml.ps1' -ForegroundColor Gray
+Write-Host '  Ou: POST http://localhost:8000/predict-from-db?limit=100' -ForegroundColor Gray
 Write-Host ''
 
