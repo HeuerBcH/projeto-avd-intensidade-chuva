@@ -355,7 +355,7 @@ Dashboards interativos para visualização de dados.
 
 - Nenhum plugin adicional é necessário para o dashboard principal de intensidade de chuva. Ele foi implementado apenas com **painéis nativos** do Grafana (`barchart` e `timeseries`).
 
-> Observação: o arquivo `grafana/provisioning/dashboards/dashboard-grafana.json` é um **dashboard exportado diretamente do Grafana**, mantido apenas como referência das configurações visuais finais. Ele não é usado pelo provisionamento (que aponta para `intensidade-chuva.json`) e não exige nenhuma configuração extra.
+> Observação: o arquivo `backup-do-dashboard-grafana.json` é um **dashboard exportado diretamente do Grafana**, mantido apenas como referência das configurações visuais finais e para auxílio na correção. Ele foi criado depois de terminarmos a configuração dos graficos pelo Grafana, exportando o código com todas as configurações extras adicionadas direto no Grafana. Está na raiz do nosso projeto, unicamente para análise do professor, só se torna útil se for importado ao Grafana quando o projeto rodas, podendo analisar ele visualmente.
 
 ### Interações no dashboard de intensidade de chuva
 

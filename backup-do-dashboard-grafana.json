@@ -1,4 +1,3 @@
-// Dashboard exportado do grafana, com as configuraçõe (está aqui apenas para deixar mais completo, não foram necessárias configurações extras pelo grafana)
 {
   "annotations": {
     "list": [
