@@ -227,7 +227,8 @@ Execute os notebooks na seguinte ordem:
 1. **01_eda_exploracao.ipynb** - Análise exploratória dos dados
 2. **02_tratamento_limpeza.ipynb** - Tratamento e classificação ⚠️ **OBRIGATÓRIO**
 3. **03_modelagem_mlflow.ipynb** - Treinamento de modelos ⚠️ **OBRIGATÓRIO**
-4. **05_visualizacoes_finais.ipynb** - Visualizações finais e análises
+4. **04_preparacao_visualizacao.ipynb** - Preparação de dados para visualização
+5. **05_visualizacoes_finais.ipynb** - Visualizações finais e análises
 
 ### Endpoints da API
 
@@ -296,6 +297,7 @@ projeto-avd-intensidade-chuva/
 │   ├── 01_eda_exploracao.ipynb
 │   ├── 02_tratamento_limpeza.ipynb
 │   ├── 03_modelagem_mlflow.ipynb
+│   ├── 04_preparacao_visualizacao.ipynb
 │   └── 05_visualizacoes_finais.ipynb
 │
 ├── sql_scripts/                    # Scripts SQL
@@ -364,6 +366,10 @@ Dashboards interativos para visualização de dados.
   - Quatro gráficos de barras nativos mostrando, por classe de intensidade, a **precipitação média (mm)**, **pressão média (hPa)**, **umidade relativa média (%)** e **velocidade média do vento (m/s)**.
   - Quatro gráficos de séries temporais nativos para as mesmas métricas, com dados agregados em janelas de **30 minutos (média)** para reduzir a densidade de pontos e facilitar a análise.
   - Eixos Y configurados com unidades e faixas adequadas (por exemplo, umidade de 0–100%, pressão de 800–1200 hPa, vento até 4 m/s).
+
+### Backup do Grafana
+
+<!-- Seção a ser preenchida -->
 
 ### JupyterLab (Porta 1010)
 Ambiente de análise e modelagem com notebooks.
@@ -462,7 +468,7 @@ docker exec -it fastapi-ingestao bash
   - 5000 (MLFlow)
   - 9090 (ThingsBoard)
   - 1010 (JupyterLab)
-  - 5432 (PostgreSQL)
+  - 5432 (PostgreSQL no Docker - pode ser alterado no `docker-compose.yml`)
 - Execute: `docker compose down` e depois `.\start.ps1`
 
 ### FastAPI não responde
